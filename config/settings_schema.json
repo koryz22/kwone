@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Theme",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Typography"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_body_font",
+        "label": "Body font",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_header_font",
+        "label": "Heading font",
+        "default": "assistant_n4"
+      },
+      {
+        "type": "header",
+        "content": "Colors"
+      },
+      {
+        "type": "color",
+        "id": "colors_text",
+        "label": "Text color",
+        "default": "#f5f5f5"
+      },
+      {
+        "type": "color",
+        "id": "colors_background_1",
+        "label": "Background color",
+        "default": "#0a0a0a"
+      },
+      {
+        "type": "color",
+        "id": "color_background",
+        "label": "Theme color",
+        "default": "#0a0a0a",
+        "info": "Used for browser theme color"
+      },
+      {
+        "type": "color",
+        "id": "colors_accent_1",
+        "label": "Accent color",
+        "default": "#f5f5f5"
+      },
+      {
+        "type": "header",
+        "content": "Branding"
+      },
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon",
+        "info": "32x32px recommended"
+      }
+    ]
+  }
+]

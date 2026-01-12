@@ -1,0 +1,64 @@
+{% comment %}
+  Section: header.liquid
+  Purpose: Fixed navbar with Lookbook/About buttons and centered brand
+{% endcomment %}
+
+<header class="site-header" role="banner">
+  <div class="header-wrapper">
+    <nav class="header-nav" role="navigation" aria-label="Main">
+      <div class="header-nav-left">
+        <a href="{{ routes.root_url }}" class="header-nav-link">LOOKBOOK</a>
+        <a href="{% if section.settings.about_url != blank %}{{ section.settings.about_url }}{% else %}/pages/about{% endif %}" class="header-nav-link">ABOUT</a>
+      </div>
+
+      <div class="header-nav-center">
+        {% if section.settings.logo != blank %}
+          <a href="{{ routes.root_url }}" class="header-logo">
+            <img src="{{ section.settings.logo | image_url: width: 200 }}" alt="{{ shop.name }}" loading="eager">
+          </a>
+        {% else %}
+          <div class="header-brand-group">
+            <a href="{{ routes.root_url }}" class="header-logo-text">{{ section.settings.brand_name | default: shop.name | upcase }}</a>
+            <span class="header-year">{{ section.settings.year | default: 'Official' }}</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="header-nav-right">
+        {% comment %} Right side can be empty or have additional links {% endcomment %}
+      </div>
+    </nav>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+      "type": "text",
+      "id": "brand_name",
+      "label": "Brand name",
+      "default": "KWONE"
+    },
+    {
+      "type": "text",
+      "id": "year",
+      "label": "Year",
+      "default": "Official"
+    },
+    {
+      "type": "url",
+      "id": "about_url",
+      "label": "About page URL",
+      "info": "Leave empty to use /pages/about"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image",
+      "info": "If uploaded, logo will replace brand name"
+    }
+  ]
+}
+{% endschema %}

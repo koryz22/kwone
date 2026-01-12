@@ -1,0 +1,31 @@
+{% comment %}
+  Section: announcement-bar.liquid
+  Purpose: Optional announcement bar
+{% endcomment %}
+
+{% if section.settings.message != blank %}
+  <div class="announcement-bar" role="region" aria-label="Announcement">
+    <div class="announcement-bar-wrapper">
+      <p class="announcement-bar-message">{{ section.settings.message }}</p>
+    </div>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "settings": [
+    {
+      "type": "text",
+      "id": "message",
+      "label": "Message",
+      "default": "Welcome to our lookbook"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announcement bar"
+    }
+  ]
+}
+{% endschema %}

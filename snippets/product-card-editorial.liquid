@@ -1,0 +1,62 @@
+{% comment %}
+  Snippet: product-card-editorial.liquid
+  Purpose: Editorial-style product card for notebook/archive aesthetic
+  Usage: {% render 'product-card-editorial', product: product, index: index %}
+{% endcomment %}
+
+{%- liquid
+  assign product_index = index | default: 1
+  assign image_size = 'master'
+  if product.featured_image
+    assign featured_image = product.featured_image
+  else
+    assign featured_image = product.images.first
+  endif
+-%}
+
+<article class="product-card-editorial" data-product-id="{{ product.id }}" data-index="{{ product_index }}">
+  <div class="product-card-inner">
+    
+    {% if featured_image %}
+      <div class="product-image-wrapper">
+        <img
+          src="{{ featured_image | image_url: width: 600 }}"
+          srcset="{{ featured_image | image_url: width: 300 }} 300w,
+                  {{ featured_image | image_url: width: 400 }} 400w,
+                  {{ featured_image | image_url: width: 600 }} 600w,
+                  {{ featured_image | image_url: width: 800 }} 800w"
+          sizes="(max-width: 768px) 45vw, (max-width: 1200px) 30vw, 25vw"
+          alt="{{ featured_image.alt | escape }}"
+          loading="lazy"
+          class="product-image"
+        >
+      </div>
+    {% else %}
+      <div class="product-image-wrapper product-image-placeholder">
+        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+    {% endif %}
+
+    <div class="product-info">
+      <h3 class="product-title">{{ product.title }}</h3>
+      
+      {% if product.variants.size > 0 %}
+        <div class="product-price">
+          <span class="price-current">{{ product.price | money }}</span>
+          {% if product.compare_at_price > product.price %}
+            <span class="price-compare">{{ product.compare_at_price | money }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% if product.tags.size > 0 %}
+        <div class="product-tags">
+          {% for tag in product.tags limit: 2 %}
+            <span class="product-tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</article>

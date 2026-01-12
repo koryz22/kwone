@@ -1,0 +1,46 @@
+{% comment %}
+  Snippet: product-card-minimal.liquid
+  Purpose: Minimal product card for grid layout
+  Usage: {% render 'product-card-minimal', product: product %}
+{% endcomment %}
+
+{%- liquid
+  if product.featured_image
+    assign featured_image = product.featured_image
+  else
+    assign featured_image = product.images.first
+  endif
+-%}
+
+<article class="product-card-minimal" data-product-id="{{ product.id }}">
+  <div class="product-card-minimal-inner">
+    
+    {% if featured_image %}
+      <div class="product-image-wrapper">
+        <img
+          src="{{ featured_image | image_url: width: 500 }}"
+          srcset="{{ featured_image | image_url: width: 250 }} 250w,
+                  {{ featured_image | image_url: width: 350 }} 350w,
+                  {{ featured_image | image_url: width: 500 }} 500w,
+                  {{ featured_image | image_url: width: 600 }} 600w"
+          sizes="(max-width: 768px) 40vw, (max-width: 1200px) 28vw, 22vw"
+          alt="{{ featured_image.alt | escape }}"
+          loading="lazy"
+          class="product-image"
+        >
+      </div>
+    {% else %}
+      <div class="product-image-wrapper product-image-placeholder">
+        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+    {% endif %}
+
+    <div class="product-info-minimal">
+      <h3 class="product-title-minimal">{{ product.title }}</h3>
+      {% if product.variants.size > 0 %}
+        <p class="product-price-minimal">{{ product.price | money }}</p>
+      {% endif %}
+    </div>
+
+  </div>
+</article>
