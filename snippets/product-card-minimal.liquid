@@ -37,9 +37,7 @@
 
     <div class="product-info-minimal">
       <h3 class="product-title-minimal">{{ product.title }}</h3>
-      {% if product.variants.size > 0 %}
-        <p class="product-price-minimal">{{ product.price | money }}</p>
-      {% endif %}
+      {% comment %} Price removed {% endcomment %}
     </div>
 
   </div>

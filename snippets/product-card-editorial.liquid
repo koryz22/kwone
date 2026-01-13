@@ -40,14 +40,7 @@
     <div class="product-info">
       <h3 class="product-title">{{ product.title }}</h3>
       
-      {% if product.variants.size > 0 %}
-        <div class="product-price">
-          <span class="price-current">{{ product.price | money }}</span>
-          {% if product.compare_at_price > product.price %}
-            <span class="price-compare">{{ product.compare_at_price | money }}</span>
-          {% endif %}
-        </div>
-      {% endif %}
+      {% comment %} Price removed {% endcomment %}
 
       {% if product.tags.size > 0 %}
         <div class="product-tags">
