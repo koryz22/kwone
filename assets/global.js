@@ -14,14 +14,98 @@
   }
 
   function init() {
+    // Initialize starry background
+    initStarryBackground();
+
+    // Initialize header scroll effect
+    initHeaderScroll();
+
     // Smooth scroll for anchor links
     initSmoothScroll();
-    
+
     // Lazy load images (native lazy loading with fallback)
     initLazyImages();
-    
+
     // Product card interactions
     initProductCards();
+  }
+
+  function initHeaderScroll() {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+
+    const scrollThreshold = 50;
+
+    function handleScroll() {
+      if (window.scrollY > scrollThreshold) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial state
+  }
+
+  function initStarryBackground() {
+    // Create stars container
+    const container = document.createElement('div');
+    container.className = 'stars-container';
+    container.setAttribute('aria-hidden', 'true');
+    document.body.insertBefore(container, document.body.firstChild);
+
+    // Grid-based distribution for even spread
+    const gridCols = 8;
+    const gridRows = 12;
+    const cellWidth = 100 / gridCols;
+    const cellHeight = 100 / gridRows;
+
+    // Generate stars with grid-based positioning
+    function createStar(size, gridX, gridY) {
+      const star = document.createElement('div');
+      star.className = `star star--${size}`;
+
+      // Position within grid cell with some randomness
+      const baseX = gridX * cellWidth;
+      const baseY = gridY * cellHeight;
+      const offsetX = Math.random() * cellWidth * 0.8;
+      const offsetY = Math.random() * cellHeight * 0.8;
+
+      star.style.left = `${baseX + offsetX}%`;
+      star.style.top = `${baseY + offsetY}%`;
+
+      // Random twinkle timing for natural effect
+      const duration = 1.5 + Math.random() * 2.5;
+      const delay = Math.random() * 3;
+      star.style.setProperty('--twinkle-duration', `${duration}s`);
+      star.style.setProperty('--twinkle-delay', `${delay}s`);
+
+      // Set base opacity based on size
+      const baseOpacity = size === 'small' ? 0.4 : size === 'medium' ? 0.6 : 0.9;
+      star.style.setProperty('--base-opacity', baseOpacity);
+
+      return star;
+    }
+
+    // Add stars to container using grid distribution
+    const fragment = document.createDocumentFragment();
+
+    // Fill grid cells with stars - 40% chance per cell
+    for (let row = 0; row < gridRows; row++) {
+      for (let col = 0; col < gridCols; col++) {
+        const rand = Math.random();
+        if (rand < 0.40) {
+          let size;
+          if (rand < 0.25) size = 'small';
+          else if (rand < 0.35) size = 'medium';
+          else size = 'large';
+          fragment.appendChild(createStar(size, col, row));
+        }
+      }
+    }
+
+    container.appendChild(fragment);
   }
 
   function initSmoothScroll() {

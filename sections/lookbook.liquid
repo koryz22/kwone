@@ -15,16 +15,21 @@
 
     {% if collection.products_count > 0 %}
       <div class="lookbook-content" id="lookbook-content">
-        {% if section.settings.show_catalog_title %}
-          <div class="catalog-title">
-            <h2 class="catalog-title-text">{{ section.settings.catalog_title | default: 'Catalog 2026' }}</h2>
+        {% comment %} Catalog Hero Section {% endcomment %}
+        <div class="catalog-hero">
+          <div class="catalog-hero-inner">
+            {% if section.settings.show_release_title %}
+              <span class="catalog-eyebrow">{{ section.settings.release_title | default: 'Vol. 01' }}</span>
+            {% endif %}
+            {% if section.settings.show_catalog_title %}
+              <h1 class="catalog-hero-title">{{ section.settings.catalog_title | default: 'Catalog 2026' }}</h1>
+            {% endif %}
+            <div class="catalog-hero-line"></div>
+            {% if section.settings.catalog_subtitle != blank %}
+              <p class="catalog-hero-subtitle">{{ section.settings.catalog_subtitle }}</p>
+            {% endif %}
           </div>
-        {% endif %}
-        {% if section.settings.show_release_title %}
-          <div class="release-title-bubble">
-            <span class="release-title-text">{{ section.settings.release_title | default: 'Release 1.0' }}</span>
-          </div>
-        {% endif %}
+        </div>
         {% if section.settings.layout_style == 'editorial' %}
           {% comment %} Editorial/notebook style layout {% endcomment %}
           <div class="lookbook-editorial" data-collection-handle="{{ collection.handle }}">
@@ -128,6 +133,12 @@
       "id": "release_title",
       "label": "Release title",
       "default": "Vol. 01"
+    },
+    {
+      "type": "text",
+      "id": "catalog_subtitle",
+      "label": "Catalog subtitle",
+      "default": "\"For the man becoming more.\""
     },
     {
       "type": "collection",

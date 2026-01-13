@@ -38,40 +38,11 @@
       </div>
     {% endif %}
 
-    {% comment %} Footer Content Grid - Centered Brand Text {% endcomment %}
-    <div class="footer-content-grid">
-      <div class="footer-brand-centered">
-        {% if section.settings.brand_description != blank %}
-          <p class="footer-brand-text">{{ section.settings.brand_description }}</p>
-        {% endif %}
-        {% if section.settings.brand_tagline != blank %}
-          <p class="footer-brand-tagline">{{ section.settings.brand_tagline }}</p>
-        {% endif %}
-      </div>
-    </div>
-
-    {% comment %} Footer Links {% endcomment %}
-    <div class="footer-links">
-      {% if section.settings.show_footer_links %}
-        <div class="footer-links-row">
-          {% if section.settings.privacy_policy_url != blank %}
-            <a href="{{ section.settings.privacy_policy_url }}" class="footer-link">{{ section.settings.privacy_policy_label | default: 'PRIVACY POLICY' }}</a>
-          {% endif %}
-          {% if section.settings.shipping_url != blank %}
-            <a href="{{ section.settings.shipping_url }}" class="footer-link">{{ section.settings.shipping_label | default: 'SHIPPING & RETURNS' }}</a>
-          {% endif %}
-        </div>
-      {% endif %}
-    </div>
-
-    {% comment %} Copyright {% endcomment %}
+    {% comment %} Copyright Only {% endcomment %}
     <div class="footer-bottom">
       <p class="footer-copyright">
-        &copy; {{ 'now' | date: '%Y' }} {{ section.settings.copyright_text | default: shop.name | upcase }}
+        &copy; {{ 'now' | date: '%Y' }} {{ section.settings.copyright_text | default: shop.name | upcase }}. All rights reserved.
       </p>
-      {% if section.settings.show_site_credit %}
-        <p class="footer-credit">{{ section.settings.site_credit_text }}</p>
-      {% endif %}
     </div>
 
   </div>
@@ -79,9 +50,9 @@
 
 <style>
   .site-footer {
-    padding: var(--spacing-xxl) 0 var(--spacing-lg);
+    padding: var(--spacing-lg) 0;
     border-top: none;
-    margin-top: var(--spacing-xxl);
+    margin-top: var(--spacing-md);
   }
 
   .footer-wrapper {
@@ -99,12 +70,12 @@
   }
 
   .newsletter-title {
-    font-size: 1.4rem;
-    font-weight: 300;
+    font-size: 1.1rem;
+    font-weight: 400;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.2em;
     margin-bottom: var(--spacing-md);
-    color: var(--color-text);
+    color: var(--color-text-secondary);
     font-family: var(--font-sans);
   }
 
@@ -121,46 +92,70 @@
 
   .newsletter-input {
     flex: 1;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--color-border);
     padding: 1rem 1.5rem;
     color: var(--color-text);
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-family: var(--font-sans);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: border-color 0.3s ease;
+    letter-spacing: 0.08em;
+    transition: var(--transition);
+    border-radius: var(--radius-sm);
   }
 
   .newsletter-input::placeholder {
     color: var(--color-text-muted);
-    opacity: 0.6;
+    opacity: 0.5;
   }
 
   .newsletter-input:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: var(--color-border-hover);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   .newsletter-submit {
-    background: #1e4a12;
+    background: rgba(255, 255, 255, 0.03);
     color: var(--color-text);
-    border: 1px solid #1a3d0e;
+    border: 1px solid var(--color-border);
     padding: 1rem 2rem;
-    font-size: 1.1rem;
+    font-size: 0.85rem;
     font-family: var(--font-sans);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     font-weight: 400;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     white-space: nowrap;
+    border-radius: var(--radius-sm);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .newsletter-submit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: var(--transition);
   }
 
   .newsletter-submit:hover {
-    background: #2d5a1a;
-    border-color: #2d5a1a;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--color-border-hover);
     color: var(--color-text);
+    transform: translateY(-1px);
+  }
+
+  .newsletter-submit:hover::before {
+    opacity: 1;
   }
 
   .newsletter-message {
@@ -292,23 +287,17 @@
   /* Footer Bottom */
   .footer-bottom {
     text-align: center;
-    padding-top: var(--spacing-lg);
+    padding-top: var(--spacing-sm);
   }
 
   .footer-copyright {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--color-text-muted);
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
     margin-bottom: 0;
-  }
-
-  .footer-credit {
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-    font-family: var(--font-mono);
-    opacity: 0.6;
+    opacity: 0.7;
   }
 
   /* Responsive */
