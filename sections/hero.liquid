@@ -1,0 +1,173 @@
+{% comment %}
+  Section: hero.liquid
+  Purpose: Full-screen hero section with bold typography
+{% endcomment %}
+
+<section class="hero-section">
+  <div class="hero-content">
+    <span class="hero-eyebrow">{{ section.settings.eyebrow | default: 'CATALOG 2026' }}</span>
+    <h1 class="hero-title">{{ section.settings.title | default: 'FOR THE MAN BECOMING MORE' | newline_to_br }}</h1>
+    <p class="hero-subtitle">{{ section.settings.subtitle | default: 'Wallets and accessories built for disciplined men.' }}</p>
+    <a href="{{ section.settings.cta_link | default: '#products-section' }}" class="hero-cta">
+      {{ section.settings.cta_text | default: 'SHOP NOW' }}
+    </a>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text",
+      "default": "CATALOG 2026"
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Title",
+      "default": "FOR THE MAN\nBECOMING MORE"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Wallets and accessories built for disciplined men."
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Button text",
+      "default": "DISCOVER"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#1a365d"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero"
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  .hero-section {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+    padding: 8rem var(--spacing-xl);
+  }
+
+  .hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .hero-content {
+    max-width: 800px;
+    animation: heroFadeIn 1s ease forwards;
+  }
+
+  .hero-eyebrow {
+    display: block;
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 2rem;
+    font-family: var(--font-sans);
+  }
+
+  .hero-title {
+    font-family: var(--font-serif);
+    font-size: clamp(4rem, 12vw, 8rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    color: #ffffff;
+    margin: 0 0 3rem 0;
+    text-transform: uppercase;
+    font-style: italic;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 0 4rem 0;
+    line-height: 1.6;
+    max-width: 550px;
+    font-family: var(--font-sans);
+  }
+
+  .hero-cta {
+    display: inline-block;
+    padding: 1.5rem 4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-family: var(--font-sans);
+  }
+
+  .hero-cta:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+  }
+
+  @keyframes heroFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-section {
+      padding: 6rem var(--spacing-md);
+      min-height: 90vh;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 14vw, 5rem);
+    }
+
+    .hero-cta {
+      padding: 1.2rem 3rem;
+    }
+  }
+</style>

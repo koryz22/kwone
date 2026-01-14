@@ -1,144 +1,354 @@
 {% comment %}
   Section: lookbook.liquid
-  Purpose: Main editorial lookbook section
+  Purpose: Products section with Vol. 01 header and clean grid
 {% endcomment %}
 
-<section class="lookbook-section" id="lookbook-section" data-section-id="{{ section.id }}">
-  <div class="lookbook-wrapper">
-    
-    {% comment %} Main header removed - using navbar only {% endcomment %}
+<section class="products-section" id="products-section">
+  <div class="products-wrapper">
+
+    <!-- Section Header -->
+    <header class="section-header">
+      <h2 class="section-title">{{ section.settings.section_title | default: 'Vol. 01' }}</h2>
+      <p class="section-subtitle">{{ section.settings.section_subtitle | default: 'For the man becoming more.' }}</p>
+    </header>
 
     {%- liquid
       assign collection = collections[section.settings.collection] | default: collections.all
-      assign products_per_page = section.settings.products_per_page
+      assign products_limit = section.settings.products_limit | default: 6
     -%}
 
     {% if collection.products_count > 0 %}
-      <div class="lookbook-content" id="lookbook-content">
-        {% comment %} Catalog Hero Section {% endcomment %}
-        <div class="catalog-hero">
-          <div class="catalog-hero-inner">
-            {% if section.settings.show_release_title %}
-              <span class="catalog-eyebrow">{{ section.settings.release_title | default: 'Vol. 01' }}</span>
-            {% endif %}
-            {% if section.settings.show_catalog_title %}
-              <h1 class="catalog-hero-title">{{ section.settings.catalog_title | default: 'Catalog 2026' }}</h1>
-            {% endif %}
-            <div class="catalog-hero-line"></div>
-            {% if section.settings.catalog_subtitle != blank %}
-              <p class="catalog-hero-subtitle">{{ section.settings.catalog_subtitle }}</p>
-            {% endif %}
-          </div>
-        </div>
-        {% if section.settings.layout_style == 'editorial' %}
-          {% comment %} Editorial/notebook style layout {% endcomment %}
-          <div class="lookbook-editorial" data-collection-handle="{{ collection.handle }}">
-            {% paginate collection.products by products_per_page %}
-              {% for product in collection.products %}
-                {% render 'product-card-editorial', product: product, index: forloop.index %}
-              {% endfor %}
-            {% endpaginate %}
-          </div>
-        {% else %}
-          {% comment %} Minimal grid layout {% endcomment %}
-          <div class="lookbook-grid" data-collection-handle="{{ collection.handle }}">
-            {% paginate collection.products by products_per_page %}
-              {% for product in collection.products %}
-                {% render 'product-card-minimal', product: product %}
-              {% endfor %}
-            {% endpaginate %}
-          </div>
+      <!-- Product Grid -->
+      <div class="product-grid">
+        {% for product in collection.products limit: products_limit %}
+          <article class="product-card">
+            <a href="{{ product.url }}" class="product-card-link">
+              <div class="product-card-inner">
+                <div class="product-image-wrapper">
+                  {% if product.featured_image %}
+                    <img
+                      src="{{ product.featured_image | image_url: width: 800 }}"
+                      alt="{{ product.featured_image.alt | escape | default: product.title }}"
+                      class="product-image"
+                      loading="lazy"
+                      width="800"
+                      height="800"
+                    >
+                  {% else %}
+                    <div class="product-image-placeholder">
+                      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="400" height="400" fill="#1a1a1a"/>
+                        <text x="50%" y="50%" text-anchor="middle" fill="#444" font-size="20">No Image</text>
+                      </svg>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="product-info">
+                  <h3 class="product-title">{{ product.title }}</h3>
+                  <div class="product-price">
+                    {% if product.compare_at_price > product.price %}
+                      <span class="price-compare">{{ product.compare_at_price | money }}</span>
+                    {% endif %}
+                    <span class="price-current">{{ product.price | money }}</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </article>
+        {% endfor %}
+
+        {% comment %} Fill remaining slots with placeholders if less than 6 products {% endcomment %}
+        {% assign products_count = collection.products.size %}
+        {% if products_count < products_limit %}
+          {% assign empty_slots = products_limit | minus: products_count %}
+          {% for i in (1..empty_slots) %}
+            <article class="product-card product-card-empty">
+              <div class="product-card-inner">
+                <div class="product-image-wrapper">
+                  <div class="product-image-placeholder">
+                    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="400" height="400" fill="#1a1a1a"/>
+                      <text x="50%" y="50%" text-anchor="middle" fill="#333" font-size="18">Coming Soon</text>
+                    </svg>
+                  </div>
+                </div>
+                <div class="product-info">
+                  <h3 class="product-title">Coming Soon</h3>
+                  <div class="product-price">
+                    <span class="price-current">--</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
         {% endif %}
       </div>
     {% else %}
-      <div class="lookbook-empty">
-        <p>{{ 'sections.lookbook.no_products' | t }}</p>
+      <div class="products-empty">
+        <p>No products available yet. Check back soon.</p>
       </div>
     {% endif %}
 
   </div>
 </section>
 
+<style>
+  /* Products Section */
+  .products-section {
+    padding: 10rem 0;
+    width: 100%;
+    min-height: auto;
+    position: relative;
+    z-index: 1;
+    background: transparent;
+  }
+
+  .products-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .products-wrapper {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Section Header */
+  .section-header {
+    text-align: center;
+    margin-bottom: 8rem;
+  }
+
+  .section-title {
+    font-family: var(--font-serif);
+    font-size: clamp(4rem, 10vw, 7rem);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    color: var(--color-text);
+    margin: 0 0 1.5rem 0;
+    text-transform: uppercase;
+  }
+
+  .section-subtitle {
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-weight: 300;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    margin: 0;
+    letter-spacing: 0.03em;
+    font-family: var(--font-serif);
+  }
+
+  /* Product Grid - 3 columns */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4rem;
+    width: 100%;
+  }
+
+  /* Product Card */
+  .product-card {
+    position: relative;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards;
+  }
+
+  .product-card:nth-child(1) { animation-delay: 0.1s; }
+  .product-card:nth-child(2) { animation-delay: 0.2s; }
+  .product-card:nth-child(3) { animation-delay: 0.3s; }
+  .product-card:nth-child(4) { animation-delay: 0.4s; }
+  .product-card:nth-child(5) { animation-delay: 0.5s; }
+  .product-card:nth-child(6) { animation-delay: 0.6s; }
+
+  .product-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .product-card-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .product-image-wrapper {
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #111;
+    position: relative;
+  }
+
+  .product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+
+  .product-card:hover .product-image {
+    transform: scale(1.05);
+  }
+
+  .product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+  }
+
+  .product-image-placeholder svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .product-info {
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+
+  .product-title {
+    font-size: 1.3rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.75rem 0;
+    color: var(--color-text);
+    font-family: var(--font-sans);
+  }
+
+  .product-price {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+  }
+
+  .price-compare {
+    text-decoration: line-through;
+    opacity: 0.5;
+    font-size: 1rem;
+  }
+
+  .price-current {
+    font-weight: 400;
+  }
+
+  /* Empty placeholder cards */
+  .product-card-empty {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .product-card-empty .product-title {
+    color: var(--color-text-muted);
+  }
+
+  .products-empty {
+    text-align: center;
+    padding: 6rem 2rem;
+    color: var(--color-text-muted);
+    font-size: 1.2rem;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .products-wrapper {
+      padding: 0 var(--spacing-lg);
+    }
+
+    .product-grid {
+      gap: 3rem;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .product-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2.5rem;
+    }
+
+    .products-section {
+      padding: 6rem 0;
+    }
+
+    .section-header {
+      margin-bottom: 5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .products-wrapper {
+      padding: 0 var(--spacing-md);
+    }
+
+    .product-grid {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+
+    .section-header {
+      margin-bottom: 4rem;
+    }
+
+    .products-section {
+      padding: 5rem 0;
+    }
+  }
+</style>
+
 {% schema %}
 {
-  "name": "Lookbook",
+  "name": "Products",
   "tag": "section",
-  "class": "section-lookbook",
+  "class": "section-products",
   "settings": [
     {
       "type": "header",
-      "content": "Header Settings"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_header",
-      "label": "Show header",
-      "default": true
+      "content": "Section Header"
     },
     {
       "type": "text",
-      "id": "brand_letter",
-      "label": "Brand letter",
-      "default": "K",
-      "info": "Single letter displayed in corner"
-    },
-    {
-      "type": "text",
-      "id": "brand_name",
-      "label": "Brand name",
-      "default": "KWONE"
-    },
-    {
-      "type": "textarea",
-      "id": "tagline",
-      "label": "Tagline",
-      "default": "A visual archive of Kwone essentials or wallets and accessories built for disciplined men."
-    },
-    {
-      "type": "checkbox",
-      "id": "show_collection_label",
-      "label": "Show collection label",
-      "default": false
-    },
-    {
-      "type": "text",
-      "id": "collection_label",
-      "label": "Collection label",
-      "default": "LOOKBOOK"
-    },
-    {
-      "type": "header",
-      "content": "Content Settings"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_catalog_title",
-      "label": "Show catalog title",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "catalog_title",
-      "label": "Catalog title",
-      "default": "Catalog 2026"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_release_title",
-      "label": "Show release title",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "release_title",
-      "label": "Release title",
+      "id": "section_title",
+      "label": "Section title",
       "default": "Vol. 01"
     },
     {
       "type": "text",
-      "id": "catalog_subtitle",
-      "label": "Catalog subtitle",
-      "default": "\"For the man becoming more.\""
+      "id": "section_subtitle",
+      "label": "Section subtitle",
+      "default": "Look confident. Feel confident."
+    },
+    {
+      "type": "header",
+      "content": "Products"
     },
     {
       "type": "collection",
@@ -147,34 +357,18 @@
       "info": "Select collection to display. Leave empty to show all products."
     },
     {
-      "type": "select",
-      "id": "layout_style",
-      "label": "Layout style",
-      "options": [
-        {
-          "value": "editorial",
-          "label": "Editorial / Notebook"
-        },
-        {
-          "value": "minimal",
-          "label": "Minimal Grid"
-        }
-      ],
-      "default": "editorial"
-    },
-    {
       "type": "range",
-      "id": "products_per_page",
-      "label": "Products per page",
-      "min": 12,
-      "max": 48,
-      "step": 6,
-      "default": 24
+      "id": "products_limit",
+      "label": "Products to show",
+      "min": 3,
+      "max": 12,
+      "step": 3,
+      "default": 6
     }
   ],
   "presets": [
     {
-      "name": "Lookbook"
+      "name": "Products"
     }
   ]
 }

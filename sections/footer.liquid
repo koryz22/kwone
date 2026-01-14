@@ -1,44 +1,49 @@
 {% comment %}
   Section: footer.liquid
-  Purpose: Professional footer with email collection and links
+  Purpose: Professional footer with brand message and newsletter
 {% endcomment %}
 
 <footer class="site-footer" role="contentinfo">
   <div class="footer-wrapper">
-    
-    {% comment %} Newsletter Signup Section {% endcomment %}
-    {% if section.settings.show_newsletter %}
-      <div class="footer-newsletter">
-        <h3 class="newsletter-title">{{ section.settings.newsletter_title | default: 'JOIN OUR NEWSLETTER' }}</h3>
-        <form class="newsletter-form" id="newsletter-form" action="/contact" method="post" accept-charset="UTF-8">
-          <input type="hidden" name="form_type" value="contact">
-          <input type="hidden" name="utf8" value="✓">
-          
-          <div class="newsletter-input-wrapper">
-            <input 
-              type="email" 
-              name="contact[email]" 
-              id="newsletter-email" 
-              class="newsletter-input" 
-              placeholder="{{ section.settings.email_placeholder | default: 'EMAIL ADDRESS' }}"
-              required
-              aria-label="Email address"
-            >
-            <button type="submit" class="newsletter-submit" id="newsletter-submit">
-              {{ section.settings.subscribe_button | default: 'SUBSCRIBE' }}
-            </button>
-          </div>
-          
-          <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
-          
-          {% if section.settings.show_disclaimer %}
-            <p class="newsletter-disclaimer">{{ section.settings.disclaimer_text }}</p>
-          {% endif %}
-        </form>
-      </div>
-    {% endif %}
 
-    {% comment %} Copyright Only {% endcomment %}
+    <div class="footer-grid">
+
+      <!-- Brand Message -->
+      <div class="footer-brand">
+        <p class="footer-brand-message">{{ section.settings.brand_message }}</p>
+      </div>
+
+      <!-- Newsletter -->
+      {% if section.settings.show_newsletter %}
+        <div class="footer-newsletter">
+          <p class="newsletter-label">{{ section.settings.newsletter_title | default: 'Join the newsletter' }}</p>
+          <form class="newsletter-form" id="newsletter-form" action="/contact" method="post" accept-charset="UTF-8">
+            <input type="hidden" name="form_type" value="contact">
+            <input type="hidden" name="utf8" value="✓">
+
+            <div class="newsletter-input-wrapper">
+              <input
+                type="email"
+                name="contact[email]"
+                id="newsletter-email"
+                class="newsletter-input"
+                placeholder="{{ section.settings.email_placeholder | default: 'Enter your email' }}"
+                required
+                aria-label="Email address"
+              >
+              <button type="submit" class="newsletter-submit" id="newsletter-submit">
+                {{ section.settings.subscribe_button | default: 'Subscribe' }}
+              </button>
+            </div>
+
+            <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
+          </form>
+        </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Copyright -->
     <div class="footer-bottom">
       <p class="footer-copyright">
         &copy; {{ 'now' | date: '%Y' }} {{ section.settings.copyright_text | default: shop.name | upcase }}. All rights reserved.
@@ -50,58 +55,96 @@
 
 <style>
   .site-footer {
-    padding: var(--spacing-lg) 0;
+    min-height: 100vh;
+    width: 100%;
     border-top: none;
-    margin-top: var(--spacing-md);
+    margin-top: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 8rem 0;
   }
 
   .footer-wrapper {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-xl);
+    width: 100%;
   }
 
-  /* Newsletter Section */
-  .footer-newsletter {
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-lg);
-    border-bottom: none;
+  /* Footer Grid - Centered */
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6rem;
+    align-items: center;
+  }
+
+  /* Footer Bottom - Fixed at bottom */
+  .footer-bottom {
+    position: absolute;
+    bottom: 4rem;
+    left: 0;
+    right: 0;
     text-align: center;
   }
 
-  .newsletter-title {
+  /* Brand Message */
+  .footer-brand {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 3rem;
+  }
+
+  .footer-brand-message {
+    font-family: var(--font-serif);
     font-size: 1.1rem;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    margin-bottom: var(--spacing-md);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.8;
     color: var(--color-text-secondary);
-    font-family: var(--font-sans);
+    margin: 0;
+    max-width: 400px;
+    text-align: right;
+  }
+
+  /* Newsletter */
+  .footer-newsletter {
+    padding-left: 3rem;
+  }
+
+  .newsletter-label {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    margin: 0 0 1.2rem 0;
   }
 
   .newsletter-form {
-    max-width: 600px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 350px;
   }
 
   .newsletter-input-wrapper {
     display: flex;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
+    gap: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   .newsletter-input {
     flex: 1;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--color-border);
-    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    padding: 0.8rem 0;
     color: var(--color-text);
     font-size: 0.9rem;
     font-family: var(--font-sans);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    transition: var(--transition);
-    border-radius: var(--radius-sm);
+    letter-spacing: 0.02em;
+    transition: all 0.3s ease;
   }
 
   .newsletter-input::placeholder {
@@ -111,57 +154,31 @@
 
   .newsletter-input:focus {
     outline: none;
-    border-color: var(--color-border-hover);
-    background: rgba(255, 255, 255, 0.05);
   }
 
   .newsletter-submit {
-    background: rgba(255, 255, 255, 0.03);
+    background: transparent;
     color: var(--color-text);
-    border: 1px solid var(--color-border);
-    padding: 1rem 2rem;
+    border: none;
+    padding: 0.8rem 0 0.8rem 1.5rem;
     font-size: 0.85rem;
     font-family: var(--font-sans);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.05em;
     font-weight: 400;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     white-space: nowrap;
-    border-radius: var(--radius-sm);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .newsletter-submit::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-    opacity: 0;
-    transition: var(--transition);
+    opacity: 0.7;
   }
 
   .newsletter-submit:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: var(--color-border-hover);
-    color: var(--color-text);
-    transform: translateY(-1px);
-  }
-
-  .newsletter-submit:hover::before {
     opacity: 1;
   }
 
   .newsletter-message {
-    margin-top: var(--spacing-sm);
+    margin-top: 1rem;
     font-size: 0.85rem;
-    padding: var(--spacing-sm);
+    font-family: var(--font-sans);
   }
 
   .newsletter-message.success {
@@ -172,163 +189,69 @@
     color: #f87171;
   }
 
-  .newsletter-disclaimer {
-    font-size: 0.9rem;
-    color: var(--color-text-muted);
-    line-height: 1.6;
-    font-family: var(--font-mono);
-    margin-top: var(--spacing-sm);
-    max-width: 600px;
-  }
-
-  .newsletter-disclaimer a {
-    text-decoration: underline;
-    color: var(--color-text-muted);
-  }
-
-  /* Footer Content Grid */
-  .footer-content-grid {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-lg);
-    border-bottom: none;
-  }
-
-  .footer-brand-centered {
-    text-align: center;
-    max-width: 800px;
-  }
-
-  .footer-brand-text {
-    font-size: 1.2rem;
-    line-height: 1.8;
-    color: var(--color-text);
-    font-family: var(--font-mono);
-    letter-spacing: 0.02em;
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .footer-brand-tagline {
-    font-size: 1.2rem;
-    line-height: 1.8;
-    color: var(--color-text-muted);
-    font-family: var(--font-mono);
-    font-style: italic;
-  }
-
-  .footer-logo-wrapper {
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .footer-logo-image {
-    max-width: 150px;
-    height: auto;
-  }
-
-  .footer-location {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-family: var(--font-sans);
-  }
-
-  .footer-social-title {
-    font-size: 1.1rem;
-    font-weight: 400;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: var(--spacing-xs);
-    color: var(--color-text);
-    font-family: var(--font-sans);
-  }
-
-  .footer-social-link {
+  .footer-copyright {
     font-size: 1rem;
-    color: var(--color-text);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: opacity 0.3s ease;
+    color: var(--color-text-muted);
     font-family: var(--font-sans);
-  }
-
-  .footer-social-link:hover {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 0;
     opacity: 0.6;
   }
 
-  /* Footer Links */
-  .footer-links {
-    margin-bottom: var(--spacing-lg);
-    text-align: center;
-  }
-
-  .footer-links-row {
-    display: flex;
-    gap: var(--spacing-lg);
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .footer-link {
-    font-size: 1.1rem;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-family: var(--font-mono);
-    transition: color 0.3s ease;
-  }
-
-  .footer-link:hover {
-    color: var(--color-text);
-  }
-
-  /* Footer Bottom */
-  .footer-bottom {
-    text-align: center;
-    padding-top: var(--spacing-sm);
-  }
-
-  .footer-copyright {
-    font-size: 1.2rem;
-    color: var(--color-text-muted);
-    font-family: var(--font-sans);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0;
-    opacity: 0.7;
-  }
-
   /* Responsive */
-  @media (max-width: 968px) {
-    .footer-brand-centered {
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 4rem;
+      text-align: center;
+    }
+
+    .footer-brand {
+      justify-content: center;
+      padding-right: 0;
+    }
+
+    .footer-brand-message {
+      text-align: center;
       max-width: 100%;
-      padding: 0 var(--spacing-sm);
     }
 
-    .newsletter-input-wrapper {
-      flex-direction: column;
+    .footer-newsletter {
+      padding-left: 0;
+      display: flex;
+      justify-content: center;
     }
 
-    .newsletter-submit {
-      width: 100%;
+    .newsletter-form {
+      max-width: 100%;
     }
   }
 
   @media (max-width: 768px) {
     .site-footer {
-      padding: var(--spacing-lg) var(--spacing-sm) var(--spacing-md);
+      padding: 8rem 0 4rem;
     }
 
-    .footer-newsletter {
-      margin-bottom: var(--spacing-lg);
-      padding-bottom: var(--spacing-lg);
+    .footer-wrapper {
+      padding: 0 var(--spacing-md);
     }
 
-    .footer-links-row {
-      flex-direction: column;
-      gap: var(--spacing-sm);
+    .footer-grid {
+      gap: 3rem;
+      margin-bottom: 5rem;
+    }
+
+    .newsletter-label {
+      text-align: center;
+    }
+
+    .newsletter-form {
+      max-width: 100%;
+    }
+
+    .footer-bottom {
+      padding-top: 3rem;
     }
   }
 </style>
@@ -344,20 +267,17 @@
 
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const email = emailInput.value.trim();
     if (!email) return;
 
-    // Disable submit button
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'SUBSCRIBING...';
+    submitBtn.textContent = 'JOINING...';
 
     try {
-      // Method 1: Try to create customer account (appears in Customers tab)
-      // Generate a random password for account creation
       const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
-      
+
       const customerData = new URLSearchParams();
       customerData.append('form_type', 'customer');
       customerData.append('utf8', '✓');
@@ -377,53 +297,24 @@
         redirect: 'manual'
       });
 
-      // If customer creation succeeds (or email already exists), show success
       if (customerResponse.status === 200 || customerResponse.status === 302 || customerResponse.status === 0) {
-        messageEl.textContent = 'Thank you for subscribing!';
+        messageEl.textContent = 'Welcome to the journey.';
         messageEl.className = 'newsletter-message success';
         messageEl.style.display = 'block';
         emailInput.value = '';
-        
+
         setTimeout(() => {
           messageEl.style.display = 'none';
         }, 5000);
       } else {
-        // Fallback: Use contact form (emails will be in contact form submissions)
-        const contactData = new URLSearchParams();
-        contactData.append('form_type', 'contact');
-        contactData.append('utf8', '✓');
-        contactData.append('contact[email]', email);
-        contactData.append('contact[body]', 'Newsletter signup - Please add to customer list');
-        contactData.append('contact[tags]', 'newsletter');
-
-        const contactResponse = await fetch('/contact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json'
-          },
-          body: contactData
-        });
-
-        if (contactResponse.ok) {
-          messageEl.textContent = 'Thank you for subscribing!';
-          messageEl.className = 'newsletter-message success';
-          messageEl.style.display = 'block';
-          emailInput.value = '';
-          
-          setTimeout(() => {
-            messageEl.style.display = 'none';
-          }, 5000);
-        } else {
-          throw new Error('Subscription failed');
-        }
+        throw new Error('Subscription failed');
       }
     } catch (error) {
       console.error('Newsletter signup error:', error);
       messageEl.textContent = 'Something went wrong. Please try again.';
       messageEl.className = 'newsletter-message error';
       messageEl.style.display = 'block';
-      
+
       setTimeout(() => {
         messageEl.style.display = 'none';
       }, 5000);
@@ -441,131 +332,53 @@
   "settings": [
     {
       "type": "header",
-      "content": "Newsletter Settings"
+      "content": "Brand Message"
+    },
+    {
+      "type": "text",
+      "id": "brand_title",
+      "label": "Brand title",
+      "default": "KWONE"
+    },
+    {
+      "type": "textarea",
+      "id": "brand_message",
+      "label": "Brand message",
+      "default": "Built for men who understand that confidence is crafted, not given."
+    },
+    {
+      "type": "header",
+      "content": "Newsletter"
     },
     {
       "type": "checkbox",
       "id": "show_newsletter",
-      "label": "Show newsletter signup",
+      "label": "Show newsletter",
       "default": true
     },
     {
       "type": "text",
       "id": "newsletter_title",
       "label": "Newsletter title",
-      "default": "JOIN OUR NEWSLETTER"
+      "default": "STAY CONNECTED"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_description",
+      "label": "Newsletter description",
+      "default": "Join the journey. Get early access to new releases and exclusive content."
     },
     {
       "type": "text",
       "id": "email_placeholder",
       "label": "Email placeholder",
-      "default": "EMAIL ADDRESS"
+      "default": "YOUR EMAIL"
     },
     {
       "type": "text",
       "id": "subscribe_button",
       "label": "Subscribe button text",
-      "default": "SUBSCRIBE"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_disclaimer",
-      "label": "Show disclaimer",
-      "default": false
-    },
-    {
-      "type": "textarea",
-      "id": "disclaimer_text",
-      "label": "Disclaimer text",
-      "default": "By subscribing, you agree to receive marketing emails. You can unsubscribe at any time."
-    },
-    {
-      "type": "header",
-      "content": "Brand Information"
-    },
-    {
-      "type": "textarea",
-      "id": "brand_description",
-      "label": "Brand description",
-      "default": "KWONE BLENDS FUNCTIONALITY AND ELEGANCE, CREATING UNIQUE, PREMIUM PIECES CRAFTED WITH PRECISION."
-    },
-    {
-      "type": "textarea",
-      "id": "brand_tagline",
-      "label": "Brand tagline",
-      "default": "AND REMEMBER: QUALITY OVER QUANTITY."
-    },
-    {
-      "type": "image_picker",
-      "id": "footer_logo",
-      "label": "Footer logo",
-      "info": "Optional logo or brand mark for footer"
-    },
-    {
-      "type": "text",
-      "id": "location_text",
-      "label": "Location text",
-      "default": "YOUR CITY, STATE"
-    },
-    {
-      "type": "header",
-      "content": "Social Media"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_social",
-      "label": "Show social media",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "social_title",
-      "label": "Social title",
-      "default": "FOLLOW US"
-    },
-    {
-      "type": "text",
-      "id": "instagram_handle",
-      "label": "Instagram handle",
-      "info": "Enter handle without @ (e.g., 'kwone' for @kwone)"
-    },
-    {
-      "type": "text",
-      "id": "instagram_label",
-      "label": "Instagram label",
-      "default": "INSTAGRAM"
-    },
-    {
-      "type": "header",
-      "content": "Footer Links"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_footer_links",
-      "label": "Show footer links",
-      "default": true
-    },
-    {
-      "type": "url",
-      "id": "privacy_policy_url",
-      "label": "Privacy Policy URL"
-    },
-    {
-      "type": "text",
-      "id": "privacy_policy_label",
-      "label": "Privacy Policy label",
-      "default": "PRIVACY POLICY"
-    },
-    {
-      "type": "url",
-      "id": "shipping_url",
-      "label": "Shipping & Returns URL"
-    },
-    {
-      "type": "text",
-      "id": "shipping_label",
-      "label": "Shipping & Returns label",
-      "default": "SHIPPING & RETURNS"
+      "default": "JOIN"
     },
     {
       "type": "header",
@@ -576,18 +389,6 @@
       "id": "copyright_text",
       "label": "Copyright text",
       "default": "KWONE"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_site_credit",
-      "label": "Show site credit",
-      "default": false
-    },
-    {
-      "type": "text",
-      "id": "site_credit_text",
-      "label": "Site credit text",
-      "default": "SITE BY YOUR NAME"
     }
   ]
 }
