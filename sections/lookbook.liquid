@@ -134,7 +134,7 @@
     font-weight: 300;
     letter-spacing: 0.05em;
     color: var(--color-text);
-    margin: 0 0 1.5rem 0;
+    margin: 0 0 0.75rem 0;
     text-transform: uppercase;
   }
 
@@ -146,6 +146,91 @@
     margin: 0;
     letter-spacing: 0.03em;
     font-family: var(--font-serif);
+    text-align: center;
+  }
+
+  /* Newsletter in Section Header */
+  .section-newsletter {
+    flex: 0 0 auto;
+  }
+
+  .section-newsletter .newsletter-form {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .section-newsletter .newsletter-input-wrapper {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .section-newsletter .newsletter-input {
+    flex: 1;
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    letter-spacing: 0.02em;
+    transition: all 0.3s ease;
+    min-height: 50px;
+  }
+
+  .section-newsletter .newsletter-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.9rem;
+  }
+
+  .section-newsletter .newsletter-input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(50, 50, 50, 0.9);
+  }
+
+  .section-newsletter .newsletter-submit {
+    background: rgba(40, 40, 40, 0.8);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    font-size: 0.9rem;
+    font-family: var(--font-sans);
+    letter-spacing: 0.1em;
+    font-weight: 400;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-height: 50px;
+  }
+
+  .section-newsletter .newsletter-submit:hover {
+    background: rgba(50, 50, 50, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .section-newsletter .newsletter-submit:active {
+    transform: scale(0.98);
+  }
+
+  .section-newsletter .newsletter-message {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    font-family: var(--font-sans);
+  }
+
+  .section-newsletter .newsletter-message.success {
+    color: #4ade80;
+  }
+
+  .section-newsletter .newsletter-message.error {
+    color: #f87171;
   }
 
   /* Product Grid - 3 columns */
@@ -323,6 +408,7 @@
     }
   }
 </style>
+
 
 {% schema %}
 {

@@ -110,6 +110,42 @@
 
   {% section 'footer' %}
 
+  <!-- Newsletter Popup Modal -->
+  <div id="newsletter-popup" class="newsletter-popup" style="display: none;">
+    <div class="newsletter-popup-overlay"></div>
+    <div class="newsletter-popup-content">
+      <button class="newsletter-popup-close" id="newsletter-popup-close" aria-label="Close popup">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <h2 class="newsletter-popup-title">Subscribe to our email</h2>
+      <p class="newsletter-popup-message">Get a 20% off code when you subscribe!</p>
+      <form class="newsletter-popup-form" id="popup-newsletter-form" action="/contact" method="post" accept-charset="UTF-8">
+        <input type="hidden" name="form_type" value="contact">
+        <input type="hidden" name="utf8" value="✓">
+
+        <div class="newsletter-popup-input-wrapper">
+          <input
+            type="email"
+            name="contact[email]"
+            id="popup-newsletter-email"
+            class="newsletter-popup-input"
+            placeholder="EMAIL ADDRESS"
+            required
+            aria-label="Email address"
+          >
+          <button type="submit" class="newsletter-popup-submit" id="popup-newsletter-submit">
+            SUBSCRIBE
+          </button>
+        </div>
+
+        <div class="newsletter-popup-message-text" id="popup-newsletter-message" style="display: none;"></div>
+      </form>
+    </div>
+  </div>
+
   <ul hidden>
     <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
   </ul>
@@ -135,6 +171,309 @@
       unavailable: `{{ 'products.product.unavailable' | t }}`,
       unavailable_with_option: `{{ 'products.product.value_unavailable' | t: option_value: '[value]' }}`,
     }
+  </script>
+
+  <style>
+    /* Newsletter Popup */
+    .newsletter-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: popupFadeIn 0.3s ease;
+    }
+
+    .newsletter-popup-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+    }
+
+    .newsletter-popup-content {
+      position: relative;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 3rem;
+      max-width: 500px;
+      width: 90%;
+      z-index: 1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .newsletter-popup-close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      width: 32px;
+      height: 32px;
+    }
+
+    .newsletter-popup-close:hover {
+      color: rgba(255, 255, 255, 1);
+      transform: rotate(90deg);
+    }
+
+    .newsletter-popup-title {
+      font-family: var(--font-sans);
+      font-size: 1.8rem;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0 0 1rem 0;
+      text-align: center;
+    }
+
+    .newsletter-popup-message {
+      font-family: var(--font-sans);
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0 0 2rem 0;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .newsletter-popup-form {
+      width: 100%;
+    }
+
+    .newsletter-popup-input-wrapper {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    .newsletter-popup-input {
+      flex: 1;
+      background: rgba(40, 40, 40, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 1.2rem 1.5rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      font-family: var(--font-sans);
+      letter-spacing: 0.02em;
+      transition: all 0.3s ease;
+      min-height: 55px;
+    }
+
+    .newsletter-popup-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.9rem;
+    }
+
+    .newsletter-popup-input:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(50, 50, 50, 0.9);
+    }
+
+    .newsletter-popup-submit {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 1.2rem 2.5rem;
+      font-size: 0.95rem;
+      font-family: var(--font-sans);
+      letter-spacing: 0.1em;
+      font-weight: 400;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      min-height: 55px;
+    }
+
+    .newsletter-popup-submit:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 1);
+    }
+
+    .newsletter-popup-submit:active {
+      transform: scale(0.98);
+    }
+
+    .newsletter-popup-message-text {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-family: var(--font-sans);
+      text-align: center;
+    }
+
+    .newsletter-popup-message-text.success {
+      color: #4ade80;
+    }
+
+    .newsletter-popup-message-text.error {
+      color: #f87171;
+    }
+
+    @keyframes popupFadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .newsletter-popup-content {
+        padding: 2rem 1.5rem;
+      }
+
+      .newsletter-popup-title {
+        font-size: 1.5rem;
+      }
+
+      .newsletter-popup-message {
+        font-size: 1rem;
+      }
+
+      .newsletter-popup-input-wrapper {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .newsletter-popup-input,
+      .newsletter-popup-submit {
+        width: 100%;
+      }
+    }
+  </style>
+
+  <script>
+    (function() {
+      // Check if popup was already dismissed
+      const popupDismissed = localStorage.getItem('newsletter-popup-dismissed');
+      if (popupDismissed) {
+        return;
+      }
+
+      const popup = document.getElementById('newsletter-popup');
+      const closeBtn = document.getElementById('newsletter-popup-close');
+      const form = document.getElementById('popup-newsletter-form');
+      const messageEl = document.getElementById('popup-newsletter-message');
+      const submitBtn = document.getElementById('popup-newsletter-submit');
+      const emailInput = document.getElementById('popup-newsletter-email');
+
+      // Show popup after 10 seconds
+      setTimeout(function() {
+        if (popup && !popupDismissed) {
+          popup.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+        }
+      }, 10000);
+
+      // Close button handler
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          popup.style.display = 'none';
+          document.body.style.overflow = '';
+          localStorage.setItem('newsletter-popup-dismissed', 'true');
+        });
+      }
+
+      // Close on overlay click
+      const overlay = popup?.querySelector('.newsletter-popup-overlay');
+      if (overlay) {
+        overlay.addEventListener('click', function() {
+          popup.style.display = 'none';
+          document.body.style.overflow = '';
+          localStorage.setItem('newsletter-popup-dismissed', 'true');
+        });
+      }
+
+      // Form submission
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const email = emailInput.value.trim();
+          if (!email) return;
+
+          const originalText = submitBtn.textContent;
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'SUBSCRIBING...';
+
+          try {
+            const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
+
+            const customerData = new URLSearchParams();
+            customerData.append('form_type', 'customer');
+            customerData.append('utf8', '✓');
+            customerData.append('customer[email]', email);
+            customerData.append('customer[password]', randomPassword);
+            customerData.append('customer[password_confirmation]', randomPassword);
+            customerData.append('customer[accepts_marketing]', 'true');
+            customerData.append('customer[tags]', 'newsletter,interested');
+
+            const customerResponse = await fetch('/account', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'text/html,application/xhtml+xml'
+              },
+              body: customerData,
+              redirect: 'manual'
+            });
+
+            if (customerResponse.status === 200 || customerResponse.status === 302 || customerResponse.status === 0) {
+              messageEl.textContent = 'Success! Check your email for your 20% off code.';
+              messageEl.className = 'newsletter-popup-message-text success';
+              messageEl.style.display = 'block';
+              emailInput.value = '';
+              
+              // Close popup after 3 seconds
+              setTimeout(() => {
+                popup.style.display = 'none';
+                document.body.style.overflow = '';
+                localStorage.setItem('newsletter-popup-dismissed', 'true');
+              }, 3000);
+            } else {
+              throw new Error('Subscription failed');
+            }
+          } catch (error) {
+            console.error('Newsletter signup error:', error);
+            messageEl.textContent = 'Something went wrong. Please try again.';
+            messageEl.className = 'newsletter-popup-message-text error';
+            messageEl.style.display = 'block';
+
+            setTimeout(() => {
+              messageEl.style.display = 'none';
+            }, 5000);
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        });
+      }
+    })();
   </script>
 </body>
 </html>

@@ -8,7 +8,6 @@
     <nav class="header-nav" role="navigation" aria-label="Main">
       <div class="header-nav-left">
         <a href="{{ routes.root_url }}" class="header-nav-link">LOOKBOOK</a>
-        <a href="{% if section.settings.about_url != blank %}{{ section.settings.about_url }}{% else %}/pages/about{% endif %}" class="header-nav-link">ABOUT</a>
       </div>
 
       <div class="header-nav-center">
@@ -57,12 +56,6 @@
       "id": "year",
       "label": "Year",
       "default": "Official"
-    },
-    {
-      "type": "url",
-      "id": "about_url",
-      "label": "About page URL",
-      "info": "Leave empty to use /pages/about"
     },
     {
       "type": "image_picker",

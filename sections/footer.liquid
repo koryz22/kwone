@@ -6,42 +6,33 @@
 <footer class="site-footer" role="contentinfo">
   <div class="footer-wrapper">
 
-    <div class="footer-grid">
+    <!-- Newsletter -->
+    {% if section.settings.show_newsletter %}
+      <div class="footer-newsletter">
+        <h2 class="newsletter-heading">{{ section.settings.newsletter_title | default: 'JOIN OUR NEWSLETTER' }}</h2>
+        <form class="newsletter-form" id="newsletter-form" action="/contact" method="post" accept-charset="UTF-8">
+          <input type="hidden" name="form_type" value="contact">
+          <input type="hidden" name="utf8" value="✓">
 
-      <!-- Brand Message -->
-      <div class="footer-brand">
-        <p class="footer-brand-message">{{ section.settings.brand_message }}</p>
+          <div class="newsletter-input-wrapper">
+            <input
+              type="email"
+              name="contact[email]"
+              id="newsletter-email"
+              class="newsletter-input"
+              placeholder="{{ section.settings.email_placeholder | default: 'EMAIL ADDRESS' }}"
+              required
+              aria-label="Email address"
+            >
+            <button type="submit" class="newsletter-submit" id="newsletter-submit">
+              {{ section.settings.subscribe_button | default: 'SUBSCRIBE' }}
+            </button>
+          </div>
+
+          <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
+        </form>
       </div>
-
-      <!-- Newsletter -->
-      {% if section.settings.show_newsletter %}
-        <div class="footer-newsletter">
-          <p class="newsletter-label">{{ section.settings.newsletter_title | default: 'Join the newsletter' }}</p>
-          <form class="newsletter-form" id="newsletter-form" action="/contact" method="post" accept-charset="UTF-8">
-            <input type="hidden" name="form_type" value="contact">
-            <input type="hidden" name="utf8" value="✓">
-
-            <div class="newsletter-input-wrapper">
-              <input
-                type="email"
-                name="contact[email]"
-                id="newsletter-email"
-                class="newsletter-input"
-                placeholder="{{ section.settings.email_placeholder | default: 'Enter your email' }}"
-                required
-                aria-label="Email address"
-              >
-              <button type="submit" class="newsletter-submit" id="newsletter-submit">
-                {{ section.settings.subscribe_button | default: 'Subscribe' }}
-              </button>
-            </div>
-
-            <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
-          </form>
-        </div>
-      {% endif %}
-
-    </div>
+    {% endif %}
 
     <!-- Copyright -->
     <div class="footer-bottom">
@@ -55,7 +46,6 @@
 
 <style>
   .site-footer {
-    min-height: 100vh;
     width: 100%;
     border-top: none;
     margin-top: 0;
@@ -64,115 +54,108 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 8rem 0;
+    padding: 6rem 0;
   }
 
   .footer-wrapper {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 var(--spacing-xl);
     width: 100%;
-  }
-
-  /* Footer Grid - Centered */
-  .footer-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6rem;
+    display: flex;
+    flex-direction: column;
     align-items: center;
   }
 
-  /* Footer Bottom - Fixed at bottom */
+  /* Footer Bottom */
   .footer-bottom {
-    position: absolute;
-    bottom: 4rem;
-    left: 0;
-    right: 0;
+    margin-top: 6rem;
     text-align: center;
-  }
-
-  /* Brand Message */
-  .footer-brand {
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 3rem;
-  }
-
-  .footer-brand-message {
-    font-family: var(--font-serif);
-    font-size: 1.1rem;
-    font-weight: 300;
-    font-style: italic;
-    line-height: 1.8;
-    color: var(--color-text-secondary);
-    margin: 0;
-    max-width: 400px;
-    text-align: right;
   }
 
   /* Newsletter */
   .footer-newsletter {
-    padding-left: 3rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 900px;
   }
 
-  .newsletter-label {
-    font-family: var(--font-serif);
-    font-size: 1rem;
-    font-weight: 300;
-    font-style: italic;
-    color: var(--color-text-secondary);
-    margin: 0 0 1.2rem 0;
+  .newsletter-heading {
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 2.5rem 0;
+    text-align: center;
   }
 
   .newsletter-form {
     width: 100%;
-    max-width: 350px;
+    max-width: 800px;
   }
 
   .newsletter-input-wrapper {
     display: flex;
-    gap: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 1rem;
+    width: 100%;
   }
 
   .newsletter-input {
     flex: 1;
-    background: transparent;
-    border: none;
-    padding: 0.8rem 0;
-    color: var(--color-text);
-    font-size: 0.9rem;
+    background: rgba(40, 40, 40, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
     font-family: var(--font-sans);
     letter-spacing: 0.02em;
     transition: all 0.3s ease;
+    min-height: 50px;
   }
 
   .newsletter-input::placeholder {
-    color: var(--color-text-muted);
-    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 1rem;
   }
 
   .newsletter-input:focus {
     outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(50, 50, 50, 0.9);
   }
 
   .newsletter-submit {
-    background: transparent;
-    color: var(--color-text);
-    border: none;
-    padding: 0.8rem 0 0.8rem 1.5rem;
-    font-size: 0.85rem;
+    background: rgba(40, 40, 40, 0.8);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 1rem 2.5rem;
+    font-size: 0.95rem;
     font-family: var(--font-sans);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
     font-weight: 400;
+    text-transform: uppercase;
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
-    opacity: 0.7;
+    min-height: 50px;
   }
 
   .newsletter-submit:hover {
-    opacity: 1;
+    background: rgba(50, 50, 50, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 1);
+  }
+
+  .newsletter-submit:active {
+    transform: scale(0.98);
   }
 
   .newsletter-message {
@@ -200,58 +183,35 @@
   }
 
   /* Responsive */
-  @media (max-width: 900px) {
-    .footer-grid {
-      grid-template-columns: 1fr;
-      gap: 4rem;
-      text-align: center;
-    }
-
-    .footer-brand {
-      justify-content: center;
-      padding-right: 0;
-    }
-
-    .footer-brand-message {
-      text-align: center;
-      max-width: 100%;
-    }
-
-    .footer-newsletter {
-      padding-left: 0;
-      display: flex;
-      justify-content: center;
-    }
-
-    .newsletter-form {
-      max-width: 100%;
-    }
-  }
-
   @media (max-width: 768px) {
     .site-footer {
-      padding: 8rem 0 4rem;
+      padding: 4rem 0 3rem;
     }
 
     .footer-wrapper {
       padding: 0 var(--spacing-md);
     }
 
-    .footer-grid {
-      gap: 3rem;
-      margin-bottom: 5rem;
+    .newsletter-heading {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
     }
 
-    .newsletter-label {
-      text-align: center;
+    .newsletter-input-wrapper {
+      flex-direction: column;
+      gap: 1rem;
     }
 
-    .newsletter-form {
-      max-width: 100%;
+    .newsletter-input,
+    .newsletter-submit {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      font-size: 0.95rem;
+      min-height: 48px;
     }
 
     .footer-bottom {
-      padding-top: 3rem;
+      margin-top: 4.5rem;
     }
   }
 </style>
@@ -360,25 +320,19 @@
       "type": "text",
       "id": "newsletter_title",
       "label": "Newsletter title",
-      "default": "STAY CONNECTED"
-    },
-    {
-      "type": "text",
-      "id": "newsletter_description",
-      "label": "Newsletter description",
-      "default": "Join the journey. Get early access to new releases and exclusive content."
+      "default": "JOIN OUR NEWSLETTER"
     },
     {
       "type": "text",
       "id": "email_placeholder",
       "label": "Email placeholder",
-      "default": "YOUR EMAIL"
+      "default": "EMAIL ADDRESS"
     },
     {
       "type": "text",
       "id": "subscribe_button",
       "label": "Subscribe button text",
-      "default": "JOIN"
+      "default": "SUBSCRIBE"
     },
     {
       "type": "header",

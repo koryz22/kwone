@@ -4,13 +4,33 @@
 {% endcomment %}
 
 <section class="hero-section">
-  <div class="hero-content">
-    <span class="hero-eyebrow">{{ section.settings.eyebrow | default: 'CATALOG 2026' }}</span>
-    <h1 class="hero-title">{{ section.settings.title | default: 'FOR THE MAN BECOMING MORE' | newline_to_br }}</h1>
-    <p class="hero-subtitle">{{ section.settings.subtitle | default: 'Wallets and accessories built for disciplined men.' }}</p>
-    <a href="{{ section.settings.cta_link | default: '#products-section' }}" class="hero-cta">
-      {{ section.settings.cta_text | default: 'SHOP NOW' }}
-    </a>
+  <div class="hero-wrapper">
+    <div class="hero-content">
+      <span class="hero-eyebrow">{{ section.settings.eyebrow | default: 'CATALOG 2026' }}</span>
+      <h1 class="hero-title">{{ section.settings.title | default: 'FOR THE MAN BECOMING MORE' | newline_to_br }}</h1>
+      <p class="hero-subtitle">{{ section.settings.subtitle | default: 'Wallets and accessories built for disciplined men.' }}</p>
+      <a href="{{ section.settings.cta_link | default: '#products-section' }}" class="hero-cta">
+        {{ section.settings.cta_text | default: 'SHOP NOW' }}
+      </a>
+    </div>
+    
+    <div class="hero-image">
+      {% if section.settings.hero_image != blank %}
+        <img
+          src="{{ section.settings.hero_image | image_url: width: 1200 }}"
+          alt="{{ section.settings.hero_image.alt | escape }}"
+          class="hero-image-img"
+          loading="lazy"
+        >
+      {% else %}
+        <div class="hero-image-placeholder">
+          <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+            <rect width="800" height="800" fill="#1a1a1a"/>
+            <text x="50%" y="50%" text-anchor="middle" fill="#444" font-size="24" font-family="sans-serif">Image Placeholder</text>
+          </svg>
+        </div>
+      {% endif %}
+    </div>
   </div>
 </section>
 
@@ -52,6 +72,16 @@
       "id": "background_color",
       "label": "Background color",
       "default": "#1a365d"
+    },
+    {
+      "type": "header",
+      "content": "Hero Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero image",
+      "info": "Image displayed on the right side of the hero section"
     }
   ],
   "presets": [
@@ -68,7 +98,7 @@
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     background: transparent;
     position: relative;
     z-index: 1;
@@ -86,9 +116,52 @@
     background: rgba(255, 255, 255, 0.15);
   }
 
+  .hero-wrapper {
+    max-width: 1400px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6rem;
+  }
+
   .hero-content {
     max-width: 800px;
+    flex: 0 0 auto;
     animation: heroFadeIn 1s ease forwards;
+  }
+
+  /* Hero Image */
+  .hero-image {
+    flex: 0 0 auto;
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-image-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .hero-image-placeholder {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 20, 20, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+  }
+
+  .hero-image-placeholder svg {
+    width: 100%;
+    height: 100%;
   }
 
   .hero-eyebrow {
@@ -156,10 +229,34 @@
     }
   }
 
+  @media (max-width: 1200px) {
+    .hero-wrapper {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4rem;
+    }
+
+    .hero-image {
+      max-width: 100%;
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .hero-eyebrow {
+      margin-top: 2rem;
+    }
+  }
+
   @media (max-width: 768px) {
     .hero-section {
-      padding: 6rem var(--spacing-md);
+      padding: 8rem var(--spacing-md) 6rem;
       min-height: 90vh;
+      padding-top: 10rem;
+    }
+
+    .hero-wrapper {
+      gap: 3rem;
     }
 
     .hero-title {
@@ -169,5 +266,16 @@
     .hero-cta {
       padding: 1.2rem 3rem;
     }
+
+    .hero-image {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-section {
+      padding-top: 12rem;
+    }
   }
 </style>
+
