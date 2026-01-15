@@ -23,11 +23,25 @@
           loading="lazy"
         >
       {% else %}
-        <div class="hero-image-placeholder">
-          <svg viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-            <rect width="800" height="800" fill="#1a1a1a"/>
-            <text x="50%" y="50%" text-anchor="middle" fill="#444" font-size="24" font-family="sans-serif">Image Placeholder</text>
-          </svg>
+        <div class="hero-image-rotator">
+          <img
+            src="{{ 'man-fixes-shirt-cuff.jpg' | file_url }}"
+            alt="Man fixing shirt cuff"
+            class="hero-image-img hero-rotating-image active"
+            loading="eager"
+          >
+          <img
+            src="{{ 'man-looking-down-in-suit.jpg' | file_url }}"
+            alt="Man looking down in suit"
+            class="hero-image-img hero-rotating-image"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'wallets-in-suitcase.png' | file_url }}"
+            alt="Wallets in suitcase"
+            class="hero-image-img hero-rotating-image"
+            loading="lazy"
+          >
         </div>
       {% endif %}
     </div>
@@ -102,7 +116,7 @@
     background: transparent;
     position: relative;
     z-index: 1;
-    padding: 8rem var(--spacing-xl);
+    padding: 4rem var(--spacing-xl) 8rem;
   }
 
   .hero-section::after {
@@ -146,6 +160,29 @@
     height: auto;
     object-fit: cover;
     border-radius: 8px;
+  }
+
+  /* Image Rotator */
+  .hero-image-rotator {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .hero-rotating-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+
+  .hero-rotating-image.active {
+    opacity: 1;
+    position: relative;
   }
 
   .hero-image-placeholder {
@@ -240,9 +277,17 @@
       max-width: 100%;
       width: 100%;
     }
+
+    .hero-section {
+      padding-top: 8rem;
+    }
   }
 
   @media (min-width: 769px) and (max-width: 1024px) {
+    .hero-section {
+      padding-top: 6rem;
+    }
+
     .hero-eyebrow {
       margin-top: 2rem;
     }
@@ -250,9 +295,9 @@
 
   @media (max-width: 768px) {
     .hero-section {
-      padding: 8rem var(--spacing-md) 6rem;
+      padding: 4rem var(--spacing-md) 6rem;
       min-height: 90vh;
-      padding-top: 10rem;
+      padding-top: 7rem;
     }
 
     .hero-wrapper {
@@ -278,4 +323,33 @@
     }
   }
 </style>
+
+<script>
+(function() {
+  const rotator = document.querySelector('.hero-image-rotator');
+  if (!rotator) return;
+
+  const images = rotator.querySelectorAll('.hero-rotating-image');
+  if (images.length === 0) return;
+
+  let currentIndex = 0;
+  const rotationInterval = 7000; // 7 seconds
+
+  function rotateImage() {
+    // Remove active class from current image
+    images[currentIndex].classList.remove('active');
+    
+    // Move to next image
+    currentIndex = (currentIndex + 1) % images.length;
+    
+    // Add active class to new image
+    images[currentIndex].classList.add('active');
+  }
+
+  // Start rotation after initial load
+  if (images.length > 1) {
+    setInterval(rotateImage, rotationInterval);
+  }
+})();
+</script>
 

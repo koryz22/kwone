@@ -8,7 +8,14 @@
 
     <!-- Section Header -->
     <header class="section-header">
-      <h2 class="section-title">{{ section.settings.section_title | default: 'Vol. 01' }}</h2>
+      <h2 class="section-title">
+        {% assign title = section.settings.section_title | default: 'Vol. 01' %}
+        {% if title contains '01' %}
+          {{ title | replace: '01', '<span class="section-title-number">-01-</span>' }}
+        {% else %}
+          {{ title }}
+        {% endif %}
+      </h2>
       <p class="section-subtitle">{{ section.settings.section_subtitle | default: 'For the man becoming more.' }}</p>
     </header>
 
@@ -138,8 +145,13 @@
     text-transform: uppercase;
   }
 
+  .section-title-number {
+    font-size: 1.3em;
+    display: inline-block;
+  }
+
   .section-subtitle {
-    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
     font-weight: 300;
     color: var(--color-text-secondary);
     font-style: italic;
@@ -430,7 +442,7 @@
       "type": "text",
       "id": "section_subtitle",
       "label": "Section subtitle",
-      "default": "Look confident. Feel confident."
+      "default": "\"Look confident. Feel confident.\""
     },
     {
       "type": "header",
