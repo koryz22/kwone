@@ -513,7 +513,7 @@ body.lookbook-theme {
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--color-bg-subtle);
+  background: transparent;
 }
 
 .product-card .product-info {
@@ -723,7 +723,7 @@ body.lookbook-theme {
   position: relative;
   width: 100%;
   overflow: hidden;
-  background: var(--color-bg-subtle);
+  background: transparent;
   aspect-ratio: 1 / 1;
   border-radius: var(--radius-sm);
 }
@@ -745,7 +745,7 @@ body.lookbook-theme {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-subtle);
+  background: transparent;
   border-radius: var(--radius-sm);
 }
 
