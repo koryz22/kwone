@@ -158,7 +158,7 @@
       <h2 class="newsletter-popup-title">Subscribe to our email</h2>
       <p class="newsletter-popup-message">Get a 10% off code when you subscribe!</p>
 
-      {% comment %} Hidden form with Shopify's CSRF token - uses Liquid form tag {% endcomment %}
+      {% comment %} Hidden form that submits to iframe - avoids page redirect {% endcomment %}
       {% form 'create_customer', id: 'popup-newsletter-form', class: 'popup-newsletter-form-hidden' %}
         <input type="hidden" name="customer[email]" id="popup-newsletter-email-hidden">
         <input type="hidden" name="customer[first_name]" id="popup-newsletter-firstname-hidden">
@@ -166,7 +166,9 @@
         <input type="hidden" name="customer[password_confirmation]" id="popup-newsletter-password-confirm-hidden">
         <input type="hidden" name="customer[accepts_marketing]" value="true">
         <input type="hidden" name="customer[tags]" value="newsletter,interested">
+        <input type="hidden" name="return_to" value="{{ request.path }}">
       {% endform %}
+      <iframe name="popup-newsletter-iframe" id="popup-newsletter-iframe" style="display: none;"></iframe>
 
       <div class="newsletter-popup-input-wrapper">
         <input
@@ -631,86 +633,77 @@
         });
       }
 
-      // Handle form submission using Shopify's form with CSRF token
-      if (submitBtn && form) {
-        submitBtn.addEventListener('click', async function(e) {
+      // Handle form submission using iframe approach
+      const popupIframe = document.getElementById('popup-newsletter-iframe');
+
+      if (submitBtn && form && popupIframe) {
+        // Set form to submit to iframe
+        form.setAttribute('target', 'popup-newsletter-iframe');
+
+        submitBtn.addEventListener('click', function(e) {
           e.preventDefault();
 
           const email = emailInput.value.trim();
           if (!email) return;
+
+          // Basic email validation
+          if (!email.includes('@') || !email.includes('.')) {
+            messageEl.textContent = 'Please enter a valid email address.';
+            messageEl.className = 'newsletter-popup-message-text error';
+            messageEl.style.display = 'block';
+            return;
+          }
 
           // Show loading state
           const originalText = submitBtn.textContent;
           submitBtn.disabled = true;
           submitBtn.textContent = 'SUBSCRIBING...';
 
-          try {
-            // Generate random password for customer account
-            const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
-            const emailName = email.split('@')[0];
-            const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+          // Generate a strong password (meets Shopify requirements: min 5 chars)
+          const randomPassword = 'Kw0ne!' + Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+          const emailName = email.split('@')[0].replace(/[^a-zA-Z]/g, '') || 'Subscriber';
+          const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
 
-            // Set values in the hidden form fields
-            document.getElementById('popup-newsletter-email-hidden').value = email;
-            document.getElementById('popup-newsletter-firstname-hidden').value = firstName;
-            document.getElementById('popup-newsletter-password-hidden').value = randomPassword;
-            document.getElementById('popup-newsletter-password-confirm-hidden').value = randomPassword;
+          // Set values in the hidden form fields
+          document.getElementById('popup-newsletter-email-hidden').value = email;
+          document.getElementById('popup-newsletter-firstname-hidden').value = firstName;
+          document.getElementById('popup-newsletter-password-hidden').value = randomPassword;
+          document.getElementById('popup-newsletter-password-confirm-hidden').value = randomPassword;
 
-            // Submit the form via fetch using FormData (includes Shopify's CSRF token)
-            const formData = new FormData(form);
+          // Submit the form (goes to iframe)
+          form.submit();
 
-            const response = await fetch(form.action, {
-              method: 'POST',
-              body: formData,
-              credentials: 'same-origin'
-            });
-
-            // Check response for success
-            // 200/302 = success, 422 = customer already exists (also OK)
-            const isSuccess = response.ok || response.status === 422 || response.redirected;
-
-            if (isSuccess || response.status === 0) {
-              // Show success message
-              messageEl.textContent = 'Success! Check your email for your 10% off code.';
-              messageEl.className = 'newsletter-popup-message-text success';
-              messageEl.style.display = 'block';
-              emailInput.value = '';
-            } else {
-              // Try to get error message from response
-              const text = await response.text();
-              if (text.includes('email has already been taken') || text.includes('already exists')) {
-                messageEl.textContent = 'You\'re already subscribed! Check your email for updates.';
-                messageEl.className = 'newsletter-popup-message-text success';
-              } else {
-                messageEl.textContent = 'Success! Check your email for your 10% off code.';
-                messageEl.className = 'newsletter-popup-message-text success';
-              }
-              messageEl.style.display = 'block';
-              emailInput.value = '';
-            }
-
-            // Close popup after 3 seconds
-            setTimeout(() => {
-              popup.style.display = 'none';
-              document.body.style.overflow = '';
-              localStorage.setItem('newsletter-popup-dismissed', 'true');
-            }, 3000);
-          } catch (error) {
-            console.error('Subscription error:', error);
-            // Show success anyway to prevent email harvesting
+          // Show success message after a short delay
+          setTimeout(function() {
             messageEl.textContent = 'Success! Check your email for your 10% off code.';
             messageEl.className = 'newsletter-popup-message-text success';
             messageEl.style.display = 'block';
             emailInput.value = '';
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
 
-            setTimeout(() => {
+            // Close popup after 3 seconds
+            setTimeout(function() {
               popup.style.display = 'none';
               document.body.style.overflow = '';
               localStorage.setItem('newsletter-popup-dismissed', 'true');
             }, 3000);
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+          }, 1500);
+        });
+
+        // Listen for iframe load to detect errors
+        popupIframe.addEventListener('load', function() {
+          try {
+            const iframeDoc = popupIframe.contentDocument || popupIframe.contentWindow.document;
+            const iframeContent = iframeDoc.body ? iframeDoc.body.innerHTML : '';
+
+            if (iframeContent.includes('already been taken') || iframeContent.includes('already exists')) {
+              messageEl.textContent = 'You\'re already subscribed! Check your email for updates.';
+              messageEl.className = 'newsletter-popup-message-text success';
+              messageEl.style.display = 'block';
+            }
+          } catch (e) {
+            // Cross-origin error expected after successful submission
           }
         });
       }
