@@ -643,41 +643,32 @@
           try {
             // Generate random password for customer account
             const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
-
-            // Extract name from email (part before @) for better customer records
             const emailName = email.split('@')[0];
             const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
 
             // Create customer account with marketing consent - this triggers the workflow
-            const formData = new FormData();
-            formData.append('form_type', 'customer');
-            formData.append('utf8', '✓');
-            formData.append('customer[email]', email);
-            formData.append('customer[first_name]', firstName);
-            formData.append('customer[password]', randomPassword);
-            formData.append('customer[password_confirmation]', randomPassword);
-            formData.append('customer[accepts_marketing]', 'true');
-            formData.append('customer[tags]', 'newsletter,interested');
+            const customerData = new FormData();
+            customerData.append('form_type', 'customer');
+            customerData.append('utf8', '✓');
+            customerData.append('customer[email]', email);
+            customerData.append('customer[first_name]', firstName);
+            customerData.append('customer[password]', randomPassword);
+            customerData.append('customer[password_confirmation]', randomPassword);
+            customerData.append('customer[accepts_marketing]', 'true');
+            customerData.append('customer[tags]', 'newsletter,interested');
 
             // Submit to /account endpoint to create customer and trigger workflow
+            // 422 status means customer already exists, which is OK - they're already subscribed
             const response = await fetch('/account', {
               method: 'POST',
-              body: formData,
-              redirect: 'manual'
+              body: customerData,
+              redirect: 'manual',
+              credentials: 'same-origin'
             });
-
-            // Also submit to contact endpoint as backup to ensure marketing subscription
-            const contactData = new FormData();
-            contactData.append('form_type', 'customer');
-            contactData.append('utf8', '✓');
-            contactData.append('contact[email]', email);
-            contactData.append('customer[accepts_marketing]', 'true');
             
-            await fetch('/contact', {
-              method: 'POST',
-              body: contactData,
-              redirect: 'manual'
-            });
+            // 200, 302, 0 = success (new customer created)
+            // 422 = customer already exists (also OK - they may already be subscribed)
+            // Any other status, we'll still show success to prevent email harvesting
 
             // Show success message - workflow will trigger automatically
             messageEl.textContent = 'Success! Check your email for your 10% off code.';
