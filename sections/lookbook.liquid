@@ -21,7 +21,7 @@
 
     {%- liquid
       assign collection = collections[section.settings.collection] | default: collections.all
-      assign products_limit = section.settings.products_limit | default: 6
+      assign products_limit = section.settings.products_limit | default: 5
     -%}
 
     {% if collection.products_count > 0 %}
@@ -64,7 +64,7 @@
           </article>
         {% endfor %}
 
-        {% comment %} Fill remaining slots with placeholders if less than 6 products {% endcomment %}
+        {% comment %} Fill remaining slots with placeholders if less than products_limit {% endcomment %}
         {% assign products_count = collection.products.size %}
         {% if products_count < products_limit %}
           {% assign empty_slots = products_limit | minus: products_count %}
@@ -245,10 +245,10 @@
     color: #f87171;
   }
 
-  /* Product Grid - 3 columns */
+  /* Product Grid - 6 columns for staggered layout (each product spans 2 columns = 1/3 width) */
   .product-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 4rem;
     width: 100%;
   }
@@ -260,11 +260,26 @@
     animation: fadeInUp 0.8s ease forwards;
   }
 
-  .product-card:nth-child(1) { animation-delay: 0.1s; }
-  .product-card:nth-child(2) { animation-delay: 0.2s; }
-  .product-card:nth-child(3) { animation-delay: 0.3s; }
-  .product-card:nth-child(4) { animation-delay: 0.4s; }
-  .product-card:nth-child(5) { animation-delay: 0.5s; }
+  .product-card:nth-child(1) { 
+    animation-delay: 0.1s; 
+    grid-column: 1 / span 2;
+  }
+  .product-card:nth-child(2) { 
+    animation-delay: 0.2s; 
+    grid-column: 3 / span 2;
+  }
+  .product-card:nth-child(3) { 
+    animation-delay: 0.3s; 
+    grid-column: 5 / span 2;
+  }
+  .product-card:nth-child(4) { 
+    animation-delay: 0.4s; 
+    grid-column: 2 / span 2;
+  }
+  .product-card:nth-child(5) { 
+    animation-delay: 0.5s; 
+    grid-column: 4 / span 2;
+  }
   .product-card:nth-child(6) { animation-delay: 0.6s; }
 
   .product-card-link {
@@ -392,6 +407,15 @@
       gap: 2.5rem;
     }
 
+    /* Reset grid-column positioning for 2-column layout */
+    .product-card:nth-child(1),
+    .product-card:nth-child(2),
+    .product-card:nth-child(3),
+    .product-card:nth-child(4),
+    .product-card:nth-child(5) {
+      grid-column: auto;
+    }
+
     .products-section {
       padding: 6rem 0;
     }
@@ -409,6 +433,15 @@
     .product-grid {
       grid-template-columns: 1fr;
       gap: 3rem;
+    }
+
+    /* Reset grid-column positioning for 1-column layout */
+    .product-card:nth-child(1),
+    .product-card:nth-child(2),
+    .product-card:nth-child(3),
+    .product-card:nth-child(4),
+    .product-card:nth-child(5) {
+      grid-column: auto;
     }
 
     .section-header {
@@ -460,8 +493,8 @@
       "label": "Products to show",
       "min": 3,
       "max": 12,
-      "step": 3,
-      "default": 6
+      "step": 1,
+      "default": 5
     }
   ],
   "presets": [
