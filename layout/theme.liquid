@@ -801,15 +801,38 @@
 
   <script>
     (function() {
-      // Check if popup was already dismissed
+      // Check for successful subscription on page load (from either form)
+      function checkForSuccessfulSubscription() {
+        const popupSuccess = document.getElementById('ContactPopup-success');
+        const footerSuccess = document.getElementById('ContactFooter-success');
+        
+        // Check if success message is visible (form.posted_successfully? is true)
+        if ((popupSuccess && popupSuccess.offsetParent !== null) || 
+            (footerSuccess && footerSuccess.offsetParent !== null)) {
+          // User successfully subscribed - mark in session
+          sessionStorage.setItem('newsletter-subscribed', 'true');
+          return true;
+        }
+        return false;
+      }
+
+      // Check if already subscribed in this session
+      if (checkForSuccessfulSubscription()) {
+        // User already subscribed this session, don't show popup
+        return;
+      }
+
+      // Check if popup was already dismissed OR if user subscribed in this session
       const popupDismissed = localStorage.getItem('newsletter-popup-dismissed');
-      if (popupDismissed) {
+      const sessionSubscribed = sessionStorage.getItem('newsletter-subscribed');
+      if (popupDismissed || sessionSubscribed) {
         return;
       }
 
       const popup = document.getElementById('newsletter-popup');
       const closeBtn = document.getElementById('newsletter-popup-close');
       const popupForm = document.getElementById('ContactPopup');
+      const footerForm = document.getElementById('ContactFooter');
 
       // Function to check if hCaptcha is visible on the page
       function isCaptchaVisible() {
@@ -845,14 +868,16 @@
         return false;
       }
 
-      // Function to show popup only if no captcha is visible
+      // Function to show popup only if no captcha is visible and not subscribed
       function showPopupIfNoCaptcha() {
-        if (!popup || popupDismissed || isCaptchaVisible()) {
+        // Check if user subscribed in this session
+        const sessionSubscribed = sessionStorage.getItem('newsletter-subscribed');
+        if (!popup || popupDismissed || sessionSubscribed || isCaptchaVisible()) {
           return;
         }
         
         // Double-check one more time before showing
-        if (!isCaptchaVisible()) {
+        if (!isCaptchaVisible() && !sessionSubscribed) {
           popup.style.display = 'flex';
           document.body.style.overflow = 'hidden';
         }
@@ -931,7 +956,9 @@
           setTimeout(function() {
             const successMessage = document.getElementById('ContactPopup-success');
             if (successMessage && successMessage.offsetParent !== null) {
-              // Form was successful, close popup after 3 seconds
+              // Form was successful, mark as subscribed in session
+              sessionStorage.setItem('newsletter-subscribed', 'true');
+              // Close popup after 3 seconds
               setTimeout(function() {
                 popup.style.display = 'none';
                 document.body.style.overflow = '';
@@ -957,6 +984,37 @@
             }
           }, 500);
         });
+      }
+
+      // Monitor footer form for successful subscription
+      if (footerForm) {
+        // Check on page load if footer form was successful
+        setTimeout(function() {
+          const footerSuccess = document.getElementById('ContactFooter-success');
+          if (footerSuccess && footerSuccess.offsetParent !== null) {
+            // Footer form was successful - mark in session
+            sessionStorage.setItem('newsletter-subscribed', 'true');
+          }
+        }, 100);
+
+        // Monitor for success message appearing dynamically
+        const footerSuccessObserver = new MutationObserver(function(mutations) {
+          const footerSuccess = document.getElementById('ContactFooter-success');
+          if (footerSuccess && footerSuccess.offsetParent !== null) {
+            // Footer form was successful - mark in session
+            sessionStorage.setItem('newsletter-subscribed', 'true');
+          }
+        });
+
+        // Observe the footer form area for success message
+        const footerFormWrapper = footerForm.closest('.footer-newsletter');
+        if (footerFormWrapper) {
+          footerSuccessObserver.observe(footerFormWrapper, {
+            childList: true,
+            subtree: true,
+            attributes: true
+          });
+        }
       }
 
       // Monitor for captcha completion - when captcha disappears after being visible
