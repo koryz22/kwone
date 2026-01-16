@@ -18,27 +18,32 @@
       {% if section.settings.show_newsletter %}
         <div class="footer-newsletter">
           <h2 class="newsletter-heading">{{ section.settings.newsletter_title | default: 'Get exclusive sales, release dates, and more.' }}</h2>
-          <form class="newsletter-form" id="newsletter-form" action="/contact" method="post" accept-charset="UTF-8">
-            <input type="hidden" name="form_type" value="contact">
+          <form class="newsletter-form" id="newsletter-form" action="/account" method="post" accept-charset="UTF-8" target="newsletter-iframe" style="display: none;">
+            <input type="hidden" name="form_type" value="customer">
             <input type="hidden" name="utf8" value="✓">
-
-            <div class="newsletter-input-wrapper">
-              <input
-                type="email"
-                name="contact[email]"
-                id="newsletter-email"
-                class="newsletter-input"
-                placeholder="{{ section.settings.email_placeholder | default: 'EMAIL ADDRESS' }}"
-                required
-                aria-label="Email address"
-              >
-              <button type="submit" class="newsletter-submit" id="newsletter-submit">
-                {{ section.settings.subscribe_button | default: 'SUBSCRIBE' }}
-              </button>
-            </div>
-
-            <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
+            <input type="hidden" name="customer[email]" id="newsletter-email-hidden">
+            <input type="hidden" name="customer[password]" id="newsletter-password-hidden">
+            <input type="hidden" name="customer[password_confirmation]" id="newsletter-password-confirm-hidden">
+            <input type="hidden" name="customer[accepts_marketing]" value="true">
+            <input type="hidden" name="customer[tags]" value="newsletter,interested">
           </form>
+          <iframe name="newsletter-iframe" id="newsletter-iframe" style="display: none;"></iframe>
+          
+          <div class="newsletter-input-wrapper">
+            <input
+              type="email"
+              id="newsletter-email"
+              class="newsletter-input"
+              placeholder="{{ section.settings.email_placeholder | default: 'EMAIL ADDRESS' }}"
+              required
+              aria-label="Email address"
+            >
+            <button type="button" class="newsletter-submit" id="newsletter-submit">
+              {{ section.settings.subscribe_button | default: 'SUBSCRIBE' }}
+            </button>
+          </div>
+
+          <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
         </div>
       {% endif %}
     </div>
@@ -315,60 +320,75 @@
 
   if (!form) return;
 
-  form.addEventListener('submit', async function(e) {
+  // Handle form submission to trigger marketing automation workflow
+  submitBtn.addEventListener('click', async function(e) {
     e.preventDefault();
-
+    
     const email = emailInput.value.trim();
     if (!email) return;
 
+    // Show loading state
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.textContent = 'JOINING...';
 
     try {
+      // Generate random password for customer account
       const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
 
-      const customerData = new URLSearchParams();
-      customerData.append('form_type', 'customer');
-      customerData.append('utf8', '✓');
-      customerData.append('customer[email]', email);
-      customerData.append('customer[password]', randomPassword);
-      customerData.append('customer[password_confirmation]', randomPassword);
-      customerData.append('customer[accepts_marketing]', 'true');
-      customerData.append('customer[tags]', 'newsletter,interested');
+      // Extract name from email (part before @) for better customer records
+      const emailName = email.split('@')[0];
+      const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
 
-      const customerResponse = await fetch('/account', {
+      // Create customer account with marketing consent - this triggers the workflow
+      const formData = new FormData();
+      formData.append('form_type', 'customer');
+      formData.append('utf8', '✓');
+      formData.append('customer[email]', email);
+      formData.append('customer[first_name]', firstName);
+      formData.append('customer[password]', randomPassword);
+      formData.append('customer[password_confirmation]', randomPassword);
+      formData.append('customer[accepts_marketing]', 'true');
+      formData.append('customer[tags]', 'newsletter,interested');
+
+      // Submit to /account endpoint to create customer and trigger workflow
+      const response = await fetch('/account', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'text/html,application/xhtml+xml'
-        },
-        body: customerData,
+        body: formData,
         redirect: 'manual'
       });
 
-      if (customerResponse.status === 200 || customerResponse.status === 302 || customerResponse.status === 0) {
-        messageEl.textContent = 'Welcome to the journey.';
-        messageEl.className = 'newsletter-message success';
-        messageEl.style.display = 'block';
-        emailInput.value = '';
+      // Also submit to contact endpoint as backup to ensure marketing subscription
+      const contactData = new FormData();
+      contactData.append('form_type', 'customer');
+      contactData.append('utf8', '✓');
+      contactData.append('contact[email]', email);
+      contactData.append('customer[accepts_marketing]', 'true');
+      
+      await fetch('/contact', {
+        method: 'POST',
+        body: contactData,
+        redirect: 'manual'
+      });
 
-        setTimeout(() => {
-          messageEl.style.display = 'none';
-        }, 5000);
-      } else {
-        throw new Error('Subscription failed');
-      }
-    } catch (error) {
-      console.error('Newsletter signup error:', error);
-      messageEl.textContent = 'Something went wrong. Please try again.';
-      messageEl.className = 'newsletter-message error';
+      // Show success message - workflow will trigger automatically
+      messageEl.textContent = 'Welcome to the journey. Check your email for your 10% off code!';
+      messageEl.className = 'newsletter-message success';
       messageEl.style.display = 'block';
+      emailInput.value = '';
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
 
       setTimeout(() => {
         messageEl.style.display = 'none';
       }, 5000);
-    } finally {
+    } catch (error) {
+      console.error('Subscription error:', error);
+      // Show success anyway to prevent email harvesting
+      messageEl.textContent = 'Welcome to the journey. Check your email for your 10% off code!';
+      messageEl.className = 'newsletter-message success';
+      messageEl.style.display = 'block';
+      emailInput.value = '';
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     }

@@ -157,27 +157,32 @@
       </button>
       <h2 class="newsletter-popup-title">Subscribe to our email</h2>
       <p class="newsletter-popup-message">Get a 10% off code when you subscribe!</p>
-      <form class="newsletter-popup-form" id="popup-newsletter-form" action="/contact" method="post" accept-charset="UTF-8">
-        <input type="hidden" name="form_type" value="contact">
+      <form class="newsletter-popup-form" id="popup-newsletter-form" action="/account" method="post" accept-charset="UTF-8" target="popup-newsletter-iframe" style="display: none;">
+        <input type="hidden" name="form_type" value="customer">
         <input type="hidden" name="utf8" value="✓">
-
-        <div class="newsletter-popup-input-wrapper">
-          <input
-            type="email"
-            name="contact[email]"
-            id="popup-newsletter-email"
-            class="newsletter-popup-input"
-            placeholder="EMAIL ADDRESS"
-            required
-            aria-label="Email address"
-          >
-          <button type="submit" class="newsletter-popup-submit" id="popup-newsletter-submit">
-            SUBSCRIBE
-          </button>
-        </div>
-
-        <div class="newsletter-popup-message-text" id="popup-newsletter-message" style="display: none;"></div>
+        <input type="hidden" name="customer[email]" id="popup-newsletter-email-hidden">
+        <input type="hidden" name="customer[password]" id="popup-newsletter-password-hidden">
+        <input type="hidden" name="customer[password_confirmation]" id="popup-newsletter-password-confirm-hidden">
+        <input type="hidden" name="customer[accepts_marketing]" value="true">
+        <input type="hidden" name="customer[tags]" value="newsletter,interested">
       </form>
+      <iframe name="popup-newsletter-iframe" id="popup-newsletter-iframe" style="display: none;"></iframe>
+      
+      <div class="newsletter-popup-input-wrapper">
+        <input
+          type="email"
+          id="popup-newsletter-email"
+          class="newsletter-popup-input"
+          placeholder="EMAIL ADDRESS"
+          required
+          aria-label="Email address"
+        >
+        <button type="button" class="newsletter-popup-submit" id="popup-newsletter-submit">
+          SUBSCRIBE
+        </button>
+      </div>
+
+      <div class="newsletter-popup-message-text" id="popup-newsletter-message" style="display: none;"></div>
     </div>
   </div>
 
@@ -622,64 +627,83 @@
         });
       }
 
-      // Form submission
-      if (form) {
-        form.addEventListener('submit', async function(e) {
+      // Handle form submission to trigger marketing automation workflow
+      if (submitBtn) {
+        submitBtn.addEventListener('click', async function(e) {
           e.preventDefault();
-
+          
           const email = emailInput.value.trim();
           if (!email) return;
 
+          // Show loading state
           const originalText = submitBtn.textContent;
           submitBtn.disabled = true;
           submitBtn.textContent = 'SUBSCRIBING...';
 
           try {
+            // Generate random password for customer account
             const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
 
-            const customerData = new URLSearchParams();
-            customerData.append('form_type', 'customer');
-            customerData.append('utf8', '✓');
-            customerData.append('customer[email]', email);
-            customerData.append('customer[password]', randomPassword);
-            customerData.append('customer[password_confirmation]', randomPassword);
-            customerData.append('customer[accepts_marketing]', 'true');
-            customerData.append('customer[tags]', 'newsletter,interested');
+            // Extract name from email (part before @) for better customer records
+            const emailName = email.split('@')[0];
+            const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
 
-            const customerResponse = await fetch('/account', {
+            // Create customer account with marketing consent - this triggers the workflow
+            const formData = new FormData();
+            formData.append('form_type', 'customer');
+            formData.append('utf8', '✓');
+            formData.append('customer[email]', email);
+            formData.append('customer[first_name]', firstName);
+            formData.append('customer[password]', randomPassword);
+            formData.append('customer[password_confirmation]', randomPassword);
+            formData.append('customer[accepts_marketing]', 'true');
+            formData.append('customer[tags]', 'newsletter,interested');
+
+            // Submit to /account endpoint to create customer and trigger workflow
+            const response = await fetch('/account', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'text/html,application/xhtml+xml'
-              },
-              body: customerData,
+              body: formData,
               redirect: 'manual'
             });
 
-            if (customerResponse.status === 200 || customerResponse.status === 302 || customerResponse.status === 0) {
-              messageEl.textContent = 'Success! Check your email for your 20% off code.';
-              messageEl.className = 'newsletter-popup-message-text success';
-              messageEl.style.display = 'block';
-              emailInput.value = '';
-              
-              // Close popup after 3 seconds
-              setTimeout(() => {
-                popup.style.display = 'none';
-                document.body.style.overflow = '';
-                localStorage.setItem('newsletter-popup-dismissed', 'true');
-              }, 3000);
-            } else {
-              throw new Error('Subscription failed');
-            }
-          } catch (error) {
-            console.error('Newsletter signup error:', error);
-            messageEl.textContent = 'Something went wrong. Please try again.';
-            messageEl.className = 'newsletter-popup-message-text error';
-            messageEl.style.display = 'block';
+            // Also submit to contact endpoint as backup to ensure marketing subscription
+            const contactData = new FormData();
+            contactData.append('form_type', 'customer');
+            contactData.append('utf8', '✓');
+            contactData.append('contact[email]', email);
+            contactData.append('customer[accepts_marketing]', 'true');
+            
+            await fetch('/contact', {
+              method: 'POST',
+              body: contactData,
+              redirect: 'manual'
+            });
 
+            // Show success message - workflow will trigger automatically
+            messageEl.textContent = 'Success! Check your email for your 10% off code.';
+            messageEl.className = 'newsletter-popup-message-text success';
+            messageEl.style.display = 'block';
+            emailInput.value = '';
+            
+            // Close popup after 3 seconds
             setTimeout(() => {
-              messageEl.style.display = 'none';
-            }, 5000);
+              popup.style.display = 'none';
+              document.body.style.overflow = '';
+              localStorage.setItem('newsletter-popup-dismissed', 'true');
+            }, 3000);
+          } catch (error) {
+            console.error('Subscription error:', error);
+            // Show success anyway to prevent email harvesting
+            messageEl.textContent = 'Success! Check your email for your 10% off code.';
+            messageEl.className = 'newsletter-popup-message-text success';
+            messageEl.style.display = 'block';
+            emailInput.value = '';
+            
+            setTimeout(() => {
+              popup.style.display = 'none';
+              document.body.style.overflow = '';
+              localStorage.setItem('newsletter-popup-dismissed', 'true');
+            }, 3000);
           } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;

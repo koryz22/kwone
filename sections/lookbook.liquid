@@ -29,38 +29,36 @@
       <div class="product-grid">
         {% for product in collection.products limit: products_limit %}
           <article class="product-card">
-            <a href="{{ product.url }}" class="product-card-link">
-              <div class="product-card-inner">
-                <div class="product-image-wrapper">
-                  {% if product.featured_image %}
-                    <img
-                      src="{{ product.featured_image | image_url: width: 800 }}"
-                      alt="{{ product.featured_image.alt | escape | default: product.title }}"
-                      class="product-image"
-                      loading="lazy"
-                      width="800"
-                      height="800"
-                    >
-                  {% else %}
-                    <div class="product-image-placeholder">
-                      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="400" height="400" fill="#1a1a1a"/>
-                        <text x="50%" y="50%" text-anchor="middle" fill="#444" font-size="20">No Image</text>
-                      </svg>
-                    </div>
-                  {% endif %}
-                </div>
-                <div class="product-info">
-                  <h3 class="product-title">{{ product.title }}</h3>
-                  <div class="product-price">
-                    {% if product.compare_at_price > product.price %}
-                      <span class="price-compare">{{ product.compare_at_price | money }}</span>
-                    {% endif %}
-                    <span class="price-current">{{ product.price | money }}</span>
+            <div class="product-card-inner">
+              <div class="product-image-wrapper">
+                {% if product.featured_image %}
+                  <img
+                    src="{{ product.featured_image | image_url: width: 800 }}"
+                    alt="{{ product.featured_image.alt | escape | default: product.title }}"
+                    class="product-image"
+                    loading="lazy"
+                    width="800"
+                    height="800"
+                  >
+                {% else %}
+                  <div class="product-image-placeholder">
+                    <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="400" height="400" fill="#1a1a1a"/>
+                      <text x="50%" y="50%" text-anchor="middle" fill="#444" font-size="20">No Image</text>
+                    </svg>
                   </div>
+                {% endif %}
+              </div>
+              <div class="product-info">
+                <h3 class="product-title">{{ product.title }}</h3>
+                <div class="product-price">
+                  {% if product.compare_at_price > product.price %}
+                    <span class="price-compare">{{ product.compare_at_price | money }}</span>
+                  {% endif %}
+                  <span class="price-current">{{ product.price | money }}</span>
                 </div>
               </div>
-            </a>
+            </div>
           </article>
         {% endfor %}
 
@@ -281,12 +279,6 @@
     grid-column: 4 / span 2;
   }
   .product-card:nth-child(6) { animation-delay: 0.6s; }
-
-  .product-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-  }
 
   .product-card-inner {
     display: flex;
