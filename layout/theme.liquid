@@ -216,6 +216,9 @@
     </div>
   </div>
 
+  <!-- Subscription Success Toast -->
+  <div id="subscription-toast" class="subscription-toast">Thank you for subscribing!</div>
+
   <ul hidden>
     <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
   </ul>
@@ -640,6 +643,57 @@
       margin-right: auto !important;
     }
 
+    /* Email marketing confirmation container - same styling as challenge container */
+    .shopify-email-marketing-confirmation__container {
+      position: fixed !important;
+      top: 40% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 10000 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 2rem !important;
+      max-width: 500px !important;
+      width: 90% !important;
+      padding: 2rem 1rem !important;
+      pointer-events: auto !important;
+    }
+
+    /* All children inherit proper positioning from container */
+    .shopify-email-marketing-confirmation__container > * {
+      position: relative !important;
+      width: 100% !important;
+      text-align: center !important;
+    }
+
+    /* Text elements - styled but positioned by container */
+    .shopify-email-marketing-confirmation__container p,
+    .shopify-email-marketing-confirmation__container label {
+      margin: 0 !important;
+      padding: 0 0 1rem 0 !important;
+      z-index: 10001 !important;
+    }
+
+    /* Submit button - always visible */
+    .shopify-email-marketing-confirmation__container button[type="submit"],
+    .shopify-email-marketing-confirmation__container input[type="submit"],
+    .shopify-email-marketing-confirmation__container > button {
+      position: relative !important;
+      z-index: 10002 !important; /* HIGHEST - always on top */
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      padding: 0.75rem 2rem !important;
+      min-height: 44px !important;
+      margin-top: 1rem !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
     /* Newsletter forms and buttons - also high z-index */
     .newsletter-form,
     .newsletter-popup-form,
@@ -660,6 +714,54 @@
       pointer-events: auto !important;
       cursor: pointer !important;
       margin-top: 1rem !important; /* Extra space below form */
+    }
+
+    /* Toast notification */
+    .subscription-toast {
+      position: fixed !important;
+      top: 20px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      z-index: 999999 !important;
+      background: rgba(74, 222, 128, 0.95) !important; /* Green success color */
+      color: rgba(0, 0, 0, 0.9) !important;
+      padding: 1rem 2rem !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+      font-family: var(--font-sans) !important;
+      font-size: 1rem !important;
+      font-weight: 500 !important;
+      text-align: center !important;
+      display: none !important;
+      animation: toastSlideIn 0.3s ease-out !important;
+      min-width: 300px !important;
+    }
+
+    .subscription-toast.show {
+      display: block !important;
+    }
+
+    @keyframes toastSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .subscription-toast {
+        top: 10px !important;
+        left: 50% !important;
+        right: auto !important;
+        width: 90% !important;
+        max-width: 350px !important;
+        padding: 0.875rem 1.5rem !important;
+        font-size: 0.9rem !important;
+      }
     }
 
     /* Responsive */
@@ -714,7 +816,44 @@
         color: rgba(0, 0, 0, 0.9) !important;
       }
 
-      /* Ensure footer stays below captcha */
+      /* Email marketing confirmation container - mobile styling */
+      .shopify-email-marketing-confirmation__container {
+        z-index: 999999 !important; /* Maximum z-index on mobile - above everything including footer */
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        max-width: 90% !important;
+        width: 85% !important;
+        padding: 2rem 1.5rem !important;
+        pointer-events: auto !important;
+        background: rgba(255, 255, 255, 1) !important; /* White background */
+        border-radius: 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      .shopify-email-marketing-confirmation__container * {
+        pointer-events: auto !important;
+        z-index: 999999 !important;
+      }
+
+      .shopify-email-marketing-confirmation__container button[type="submit"],
+      .shopify-email-marketing-confirmation__container input[type="submit"] {
+        z-index: 999999 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        color: rgba(255, 255, 255, 1) !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+      }
+
+      .shopify-email-marketing-confirmation__container p,
+      .shopify-email-marketing-confirmation__container label {
+        color: rgba(0, 0, 0, 0.9) !important;
+      }
+
+      /* Ensure footer stays below captcha and confirmation */
       footer,
       .site-footer,
       .footer-wrapper,
@@ -958,14 +1097,25 @@
             if (successMessage && successMessage.offsetParent !== null) {
               // Form was successful, mark as subscribed in session
               sessionStorage.setItem('newsletter-subscribed', 'true');
-              // Close popup after 3 seconds
-              setTimeout(function() {
-                popup.style.display = 'none';
-                document.body.style.overflow = '';
-                localStorage.setItem('newsletter-popup-dismissed', 'true');
-                formSubmitting = false;
-                captchaBeingHandled = false;
-              }, 3000);
+              
+              // Check if captcha was just completed
+              const captchaJustCompleted = captchaState.isVerified && captchaState.verificationCount > 0;
+              
+              if (captchaJustCompleted) {
+                // Show toast and redirect
+                if (window.handleSuccessfulSubscription) {
+                  window.handleSuccessfulSubscription();
+                }
+              } else {
+                // Close popup after 3 seconds (normal flow without captcha)
+                setTimeout(function() {
+                  popup.style.display = 'none';
+                  document.body.style.overflow = '';
+                  localStorage.setItem('newsletter-popup-dismissed', 'true');
+                  formSubmitting = false;
+                  captchaBeingHandled = false;
+                }, 3000);
+              }
             } else {
               // Check if captcha appeared (page reload or captcha challenge)
               // Reset flags if captcha appeared so form can be submitted again after captcha
@@ -1003,6 +1153,13 @@
           if (footerSuccess && footerSuccess.offsetParent !== null) {
             // Footer form was successful - mark in session
             sessionStorage.setItem('newsletter-subscribed', 'true');
+            
+            // If captcha was completed, show toast and redirect
+            setTimeout(function() {
+              if (captchaState.isVerified && window.handleSuccessfulSubscription) {
+                window.handleSuccessfulSubscription();
+              }
+            }, 500);
           }
         });
 
@@ -1184,6 +1341,20 @@
         }
       }
 
+      // Redirect to home immediately after successful subscription
+      window.handleSuccessfulSubscription = function() {
+        // Check if subscription was successful
+        const popupSuccess = document.getElementById('ContactPopup-success');
+        const footerSuccess = document.getElementById('ContactFooter-success');
+        const wasSuccessful = (popupSuccess && popupSuccess.offsetParent !== null) || 
+                             (footerSuccess && footerSuccess.offsetParent !== null);
+        
+        if (wasSuccessful && captchaState.isVerified) {
+          // Redirect immediately to home page with subscribed parameter
+          window.location.href = 'https://ceoaccessories.com?subscribed=true';
+        }
+      };
+
       // Monitor captcha state
       function monitorCaptcha() {
         const currentlyVisible = checkCaptchaVisible();
@@ -1204,6 +1375,13 @@
           
           // Allow forms to submit now
           captchaState.activeForms.clear();
+          
+          // Check for successful subscription and handle redirect
+          setTimeout(function() {
+            if (window.handleSuccessfulSubscription) {
+              window.handleSuccessfulSubscription();
+            }
+          }, 1000);
         } else if (currentlyVisible && captchaState.isVisible) {
           // Captcha still visible, ensure footer is hidden
           toggleFooterForCaptcha(true);
@@ -1225,14 +1403,62 @@
         ensureSubmitButtonsAccessible();
       }
 
+      // Check on page load if subscription was successful (after captcha)
+      function checkPageLoadSuccess() {
+        const popupSuccess = document.getElementById('ContactPopup-success');
+        const footerSuccess = document.getElementById('ContactFooter-success');
+        const wasSuccessful = (popupSuccess && popupSuccess.offsetParent !== null) || 
+                             (footerSuccess && footerSuccess.offsetParent !== null);
+        
+        // If success message exists and no captcha is visible (captcha was completed)
+        if (wasSuccessful && !checkCaptchaVisible()) {
+          // Captcha was completed and form succeeded - redirect immediately
+          setTimeout(function() {
+            captchaState.isVerified = true; // Mark as verified
+            if (window.handleSuccessfulSubscription) {
+              window.handleSuccessfulSubscription();
+            }
+          }, 500);
+        }
+      }
+
+      // Show toast on home page if redirected from subscription
+      function showSubscriptionToast() {
+        // Check for subscribed parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('subscribed') === 'true') {
+          // Remove parameter from URL (clean URL)
+          urlParams.delete('subscribed');
+          const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+          window.history.replaceState({}, '', newUrl);
+          
+          // Show toast notification
+          const toast = document.getElementById('subscription-toast');
+          if (toast) {
+            toast.classList.add('show');
+            
+            // Hide toast after 4 seconds
+            setTimeout(function() {
+              toast.classList.remove('show');
+            }, 4000);
+          }
+        }
+      }
+
       // Run monitoring
       setInterval(monitorCaptcha, 200);
       
       // Initialize on load
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeForms);
+        document.addEventListener('DOMContentLoaded', function() {
+          initializeForms();
+          setTimeout(checkPageLoadSuccess, 500);
+          showSubscriptionToast(); // Check for subscription toast on page load
+        });
       } else {
         initializeForms();
+        setTimeout(checkPageLoadSuccess, 500);
+        showSubscriptionToast(); // Check for subscription toast on page load
       }
       
       // Re-initialize on dynamic content
