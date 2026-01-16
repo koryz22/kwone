@@ -158,33 +158,61 @@
       <h2 class="newsletter-popup-title">Subscribe to our email</h2>
       <p class="newsletter-popup-message">Get a 10% off code when you subscribe!</p>
 
-      {% comment %} Hidden form that submits to iframe - avoids page redirect {% endcomment %}
-      {% form 'create_customer', id: 'popup-newsletter-form', class: 'popup-newsletter-form-hidden' %}
-        <input type="hidden" name="customer[email]" id="popup-newsletter-email-hidden">
-        <input type="hidden" name="customer[first_name]" id="popup-newsletter-firstname-hidden">
-        <input type="hidden" name="customer[password]" id="popup-newsletter-password-hidden">
-        <input type="hidden" name="customer[password_confirmation]" id="popup-newsletter-password-confirm-hidden">
-        <input type="hidden" name="customer[accepts_marketing]" value="true">
-        <input type="hidden" name="customer[tags]" value="newsletter,interested">
-        <input type="hidden" name="return_to" value="{{ request.path }}">
-      {% endform %}
-      <iframe name="popup-newsletter-iframe" id="popup-newsletter-iframe" style="display: none;"></iframe>
-
-      <div class="newsletter-popup-input-wrapper">
-        <input
-          type="email"
-          id="popup-newsletter-email"
-          class="newsletter-popup-input"
-          placeholder="EMAIL ADDRESS"
-          required
-          aria-label="Email address"
-        >
-        <button type="button" class="newsletter-popup-submit" id="popup-newsletter-submit">
-          SUBSCRIBE
-        </button>
-      </div>
-
-      <div class="newsletter-popup-message-text" id="popup-newsletter-message" style="display: none;"></div>
+      {%- form 'customer', id: 'ContactPopup', class: 'newsletter-popup-form' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <div class="newsletter-popup-form__field-wrapper">
+          <div class="field newsletter-popup-field">
+            <input
+              id="NewsletterForm--popup"
+              type="email"
+              name="contact[email]"
+              class="newsletter-popup-input field__input"
+              value="{{ form.email }}"
+              aria-required="true"
+              autocorrect="off"
+              autocapitalize="off"
+              autocomplete="email"
+              {% if form.errors %}
+                autofocus
+                aria-invalid="true"
+                aria-describedby="ContactPopup-error"
+              {% elsif form.posted_successfully? %}
+                aria-describedby="ContactPopup-success"
+              {% endif %}
+              placeholder="Enter your email..."
+              required
+            >
+            <label class="field__label" for="NewsletterForm--popup">
+              Enter your email...
+            </label>
+            <button
+              type="submit"
+              class="newsletter-popup-submit field__button"
+              name="commit"
+              id="SubscribePopup"
+              aria-label="Subscribe"
+            >
+              SUBSCRIBE
+            </button>
+          </div>
+          {%- if form.errors -%}
+            <small class="newsletter-popup-form__message newsletter-popup-form__message--error form__message" id="ContactPopup-error">
+              {{- form.errors.translated_fields.email | capitalize }}
+              {{ form.errors.messages.email -}}
+            </small>
+          {%- endif -%}
+        </div>
+        {%- if form.posted_successfully? -%}
+          <h3
+            class="newsletter-popup-form__message newsletter-popup-form__message--success form__message"
+            id="ContactPopup-success"
+            tabindex="-1"
+            autofocus
+          >
+            {{- 'newsletter.success' | t -}}
+          </h3>
+        {%- endif -%}
+      {%- endform -%}
     </div>
   </div>
 
@@ -404,15 +432,23 @@
       width: 100%;
     }
 
-    .popup-newsletter-form-hidden {
-      display: none !important;
+    .newsletter-popup-form__field-wrapper {
+      width: 100%;
     }
 
-    .newsletter-popup-input-wrapper {
+    .newsletter-popup-field {
       display: flex;
       gap: 1rem;
       width: 100%;
-      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .newsletter-popup-field .field__label {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
     }
 
     .newsletter-popup-input {
@@ -427,6 +463,11 @@
       letter-spacing: 0.02em;
       transition: all 0.3s ease;
       min-height: 55px;
+      width: 100%;
+    }
+
+    .newsletter-popup-input[aria-invalid="true"] {
+      border-color: #f87171;
     }
 
     .newsletter-popup-input::placeholder {
@@ -469,18 +510,19 @@
       transform: scale(0.98);
     }
 
-    .newsletter-popup-message-text {
+    .newsletter-popup-form__message {
       margin-top: 1rem;
       font-size: 0.9rem;
       font-family: var(--font-sans);
       text-align: center;
+      display: block;
     }
 
-    .newsletter-popup-message-text.success {
+    .newsletter-popup-form__message--success {
       color: #4ade80;
     }
 
-    .newsletter-popup-message-text.error {
+    .newsletter-popup-form__message--error {
       color: #f87171;
     }
 
@@ -506,16 +548,182 @@
         font-size: 1rem;
       }
 
-      .newsletter-popup-input-wrapper {
-        flex-direction: column;
-        gap: 1rem;
+      /* Mobile: Stack input above button, full width */
+      .newsletter-popup-field {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        width: 100% !important;
       }
 
-      .newsletter-popup-input,
+      .newsletter-popup-input {
+        width: 100% !important;
+        flex: none !important;
+        min-height: 50px !important;
+        padding: 1rem 1.25rem !important;
+        font-size: 1rem !important;
+        display: block !important;
+      }
+
       .newsletter-popup-submit {
-        width: 100%;
+        width: 100% !important;
+        padding: 1rem 1.25rem !important;
+        min-height: 50px !important;
+        font-size: 0.95rem !important;
+        white-space: normal !important;
+        display: block !important;
+        margin-top: 0 !important;
       }
     }
+
+    /* DYNAMIC CENTERING: Shopify challenge container centered on page */
+    
+    /* Shopify challenge container - dynamically centered */
+    .shopify-challenge__container {
+      position: fixed !important;
+      top: 40% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 10000 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 2rem !important;
+      max-width: 500px !important;
+      width: 90% !important;
+      padding: 2rem 1rem !important;
+      pointer-events: auto !important;
+    }
+
+    /* All children inherit proper positioning from container */
+    .shopify-challenge__container > * {
+      position: relative !important;
+      width: 100% !important;
+      text-align: center !important;
+    }
+
+    /* Text elements - styled but positioned by container */
+    .shopify-challenge__container p,
+    .shopify-challenge__container label {
+      margin: 0 !important;
+      padding: 0 0 1rem 0 !important;
+      z-index: 10001 !important;
+    }
+
+    /* Captcha widget - centered by container */
+    .shopify-challenge__container div[id*="hcaptcha"],
+    .shopify-challenge__container div[class*="h-captcha"],
+    .shopify-challenge__container div[class*="hcaptcha"],
+    .shopify-challenge__container iframe {
+      margin: 0 auto !important;
+      display: block !important;
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      z-index: 10001 !important;
+    }
+
+    /* Submit button - always visible, below captcha */
+    .shopify-challenge__container button[type="submit"],
+    .shopify-challenge__container input[type="submit"],
+    .shopify-challenge__container > button {
+      position: relative !important;
+      z-index: 10002 !important; /* HIGHEST - always on top */
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      padding: 0.75rem 2rem !important;
+      min-height: 44px !important;
+      margin-top: 1rem !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    /* Newsletter forms and buttons - also high z-index */
+    .newsletter-form,
+    .newsletter-popup-form,
+    #ContactFooter,
+    #ContactPopup {
+      position: relative !important;
+      z-index: 10003 !important;
+      pointer-events: auto !important;
+    }
+
+    .newsletter-submit,
+    .newsletter-popup-submit,
+    #Subscribe,
+    #SubscribePopup,
+    button[type="submit"].field__button {
+      position: relative !important;
+      z-index: 10004 !important; /* Even higher for newsletter buttons */
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      margin-top: 1rem !important; /* Extra space below form */
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      /* Mobile: Ensure captcha is above all content including footer */
+      .shopify-challenge__container {
+        z-index: 999999 !important; /* Maximum z-index on mobile - above everything including footer */
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        max-width: 90% !important;
+        width: 85% !important;
+        padding: 2rem 1.5rem !important;
+        pointer-events: auto !important;
+        background: rgba(255, 255, 255, 1) !important; /* White background */
+        border-radius: 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      /* All captcha elements clickable on mobile */
+      .shopify-challenge__container * {
+        pointer-events: auto !important;
+        z-index: 999999 !important;
+      }
+
+      .shopify-challenge__container div[id*="hcaptcha"],
+      .shopify-challenge__container div[class*="h-captcha"],
+      .shopify-challenge__container div[class*="hcaptcha"],
+      .shopify-challenge__container iframe {
+        z-index: 999999 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        max-width: 100% !important;
+        background: transparent !important;
+      }
+
+      .shopify-challenge__container button[type="submit"],
+      .shopify-challenge__container input[type="submit"] {
+        z-index: 999999 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        color: rgba(255, 255, 255, 1) !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+      }
+
+      /* Text elements in white container */
+      .shopify-challenge__container p,
+      .shopify-challenge__container label {
+        color: rgba(0, 0, 0, 0.9) !important;
+      }
+
+      /* Ensure footer stays below captcha */
+      footer,
+      .site-footer,
+      .footer-wrapper,
+      .footer-content-grid {
+        z-index: 1 !important;
+        position: relative !important;
+      }
+    }
+
   </style>
 
   <script>
@@ -601,17 +809,58 @@
 
       const popup = document.getElementById('newsletter-popup');
       const closeBtn = document.getElementById('newsletter-popup-close');
-      const form = document.getElementById('popup-newsletter-form');
-      const messageEl = document.getElementById('popup-newsletter-message');
-      const submitBtn = document.getElementById('popup-newsletter-submit');
-      const emailInput = document.getElementById('popup-newsletter-email');
+      const popupForm = document.getElementById('ContactPopup');
 
-      // Show popup after 10 seconds
-      setTimeout(function() {
-        if (popup && !popupDismissed) {
+      // Function to check if hCaptcha is visible on the page
+      function isCaptchaVisible() {
+        const captchaSelectors = [
+          'div[id*="hcaptcha"]',
+          'div[class*="h-captcha"]',
+          'div[class*="hcaptcha"]',
+          'iframe[src*="hcaptcha"]',
+          'iframe[src*="challenges.cloudflare.com"]',
+          'div[id*="challenge"]',
+          'form[action*="challenge"]'
+        ];
+        
+        for (let i = 0; i < captchaSelectors.length; i++) {
+          try {
+            const elements = document.querySelectorAll(captchaSelectors[i]);
+            for (let j = 0; j < elements.length; j++) {
+              const el = elements[j];
+              const style = window.getComputedStyle(el);
+              const isVisible = style.display !== 'none' && 
+                               style.visibility !== 'hidden' && 
+                               (el.offsetWidth > 0 || el.offsetHeight > 0);
+              
+              if (isVisible) {
+                return true;
+              }
+            }
+          } catch (e) {
+            // Continue checking other selectors
+          }
+        }
+        
+        return false;
+      }
+
+      // Function to show popup only if no captcha is visible
+      function showPopupIfNoCaptcha() {
+        if (!popup || popupDismissed || isCaptchaVisible()) {
+          return;
+        }
+        
+        // Double-check one more time before showing
+        if (!isCaptchaVisible()) {
           popup.style.display = 'flex';
           document.body.style.overflow = 'hidden';
         }
+      }
+
+      // Show popup after 10 seconds (only if no captcha is visible)
+      setTimeout(function() {
+        showPopupIfNoCaptcha();
       }, 10000);
 
       // Close button handler
@@ -633,81 +882,303 @@
         });
       }
 
-      // Handle form submission using iframe approach
-      const popupIframe = document.getElementById('popup-newsletter-iframe');
+      // Track form submission state to prevent double submission
+      let formSubmitting = false;
+      let captchaBeingHandled = false;
 
-      if (submitBtn && form && popupIframe) {
-        // Set form to submit to iframe
-        form.setAttribute('target', 'popup-newsletter-iframe');
-
-        submitBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-
-          const email = emailInput.value.trim();
-          if (!email) return;
-
-          // Basic email validation
-          if (!email.includes('@') || !email.includes('.')) {
-            messageEl.textContent = 'Please enter a valid email address.';
-            messageEl.className = 'newsletter-popup-message-text error';
-            messageEl.style.display = 'block';
-            return;
+      // Close popup on successful form submission
+      if (popupForm) {
+        popupForm.addEventListener('submit', function(e) {
+          // Prevent double submission
+          if (formSubmitting) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
           }
 
-          // Show loading state
-          const originalText = submitBtn.textContent;
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'SUBSCRIBING...';
-
-          // Generate a strong password (meets Shopify requirements: min 5 chars)
-          const randomPassword = 'Kw0ne!' + Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
-          const emailName = email.split('@')[0].replace(/[^a-zA-Z]/g, '') || 'Subscriber';
-          const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
-
-          // Set values in the hidden form fields
-          document.getElementById('popup-newsletter-email-hidden').value = email;
-          document.getElementById('popup-newsletter-firstname-hidden').value = firstName;
-          document.getElementById('popup-newsletter-password-hidden').value = randomPassword;
-          document.getElementById('popup-newsletter-password-confirm-hidden').value = randomPassword;
-
-          // Submit the form (goes to iframe)
-          form.submit();
-
-          // Show success message after a short delay
-          setTimeout(function() {
-            messageEl.textContent = 'Success! Check your email for your 10% off code.';
-            messageEl.className = 'newsletter-popup-message-text success';
-            messageEl.style.display = 'block';
-            emailInput.value = '';
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-
-            // Close popup after 3 seconds
+          // Check if captcha is currently visible
+          if (isCaptchaVisible() && !captchaBeingHandled) {
+            // Captcha is visible - mark that we're handling it
+            captchaBeingHandled = true;
+            formSubmitting = true;
+            
+            // Hide newsletter popup when captcha appears
             setTimeout(function() {
-              popup.style.display = 'none';
-              document.body.style.overflow = '';
-              localStorage.setItem('newsletter-popup-dismissed', 'true');
-            }, 3000);
-          }, 1500);
-        });
+              if (isCaptchaVisible()) {
+                popup.style.display = 'none';
+                document.body.style.overflow = '';
+              }
+            }, 100);
 
-        // Listen for iframe load to detect errors
-        popupIframe.addEventListener('load', function() {
-          try {
-            const iframeDoc = popupIframe.contentDocument || popupIframe.contentWindow.document;
-            const iframeContent = iframeDoc.body ? iframeDoc.body.innerHTML : '';
-
-            if (iframeContent.includes('already been taken') || iframeContent.includes('already exists')) {
-              messageEl.textContent = 'You\'re already subscribed! Check your email for updates.';
-              messageEl.className = 'newsletter-popup-message-text success';
-              messageEl.style.display = 'block';
-            }
-          } catch (e) {
-            // Cross-origin error expected after successful submission
+            // Allow form to submit - Shopify will handle captcha
+            // Don't prevent default, just mark as submitting
+            return true;
           }
+
+          // No captcha visible or captcha already handled
+          // Normal form submission
+          formSubmitting = true;
+          
+          // Disable submit button to prevent double submission
+          const submitBtn = popupForm.querySelector('button[type="submit"]');
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'SUBSCRIBING...';
+          }
+          
+          // Check for success after a delay
+          setTimeout(function() {
+            const successMessage = document.getElementById('ContactPopup-success');
+            if (successMessage && successMessage.offsetParent !== null) {
+              // Form was successful, close popup after 3 seconds
+              setTimeout(function() {
+                popup.style.display = 'none';
+                document.body.style.overflow = '';
+                localStorage.setItem('newsletter-popup-dismissed', 'true');
+                formSubmitting = false;
+                captchaBeingHandled = false;
+              }, 3000);
+            } else {
+              // Check if captcha appeared (page reload or captcha challenge)
+              // Reset flags if captcha appeared so form can be submitted again after captcha
+              if (isCaptchaVisible()) {
+                captchaBeingHandled = true;
+                // Don't reset formSubmitting yet - wait for captcha to complete
+              } else {
+                // No captcha and no success - might be an error, reset
+                formSubmitting = false;
+                captchaBeingHandled = false;
+                if (submitBtn) {
+                  submitBtn.disabled = false;
+                  submitBtn.textContent = originalText || 'SUBSCRIBE';
+                }
+              }
+            }
+          }, 500);
         });
       }
+
+      // Monitor for captcha completion - when captcha disappears after being visible
+      let captchaWasVisible = false;
+      let captchaVerificationComplete = false;
+      
+      const captchaMonitor = setInterval(function() {
+        const captchaIsVisible = isCaptchaVisible();
+        
+        if (captchaIsVisible && !captchaWasVisible) {
+          // Captcha just appeared - reset verification flag
+          captchaWasVisible = true;
+          captchaVerificationComplete = false;
+          if (formSubmitting) {
+            captchaBeingHandled = true;
+          }
+        } else if (!captchaIsVisible && captchaWasVisible) {
+          // Captcha was visible but now disappeared - verification completed
+          captchaWasVisible = false;
+          captchaVerificationComplete = true;
+          captchaBeingHandled = false;
+          
+          // Reset form submission flags after captcha completion
+          setTimeout(function() {
+            // Allow form to submit now that captcha is complete
+            formSubmitting = false;
+          }, 100);
+        }
+      }, 300);
+
+      // Monitor for captcha appearance and hide newsletter popup if it appears
+      const captchaObserver = new MutationObserver(function(mutations) {
+        if (isCaptchaVisible() && popup && popup.style.display === 'flex') {
+          // Captcha appeared while newsletter popup is showing, hide newsletter popup
+          popup.style.display = 'none';
+          document.body.style.overflow = '';
+          // Don't mark as dismissed so it can show again later if needed
+        }
+      });
+      
+      // Observe the entire document for captcha elements
+      captchaObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class', 'id', 'src']
+      });
     })();
   </script>
+
+  <script>
+    // Comprehensive hCaptcha Handler - Prevents double triggers, ensures form submission
+    (function() {
+      'use strict';
+      
+      // Global state tracking
+      const captchaState = {
+        isVisible: false,
+        isVerified: false,
+        verificationCount: 0,
+        maxVerifications: 1, // Only allow one verification per submission
+        activeForms: new Set()
+      };
+
+      // Function to check if captcha is visible
+      function checkCaptchaVisible() {
+        const selectors = [
+          'div[id*="hcaptcha"]:not([style*="display: none"])',
+          'div[class*="h-captcha"]:not([style*="display: none"])',
+          'iframe[src*="hcaptcha"]:not([style*="display: none"])',
+          'form[action*="challenge"]:not([style*="display: none"])'
+        ];
+        
+        for (const selector of selectors) {
+          try {
+            const elements = document.querySelectorAll(selector);
+            for (const el of elements) {
+              const style = window.getComputedStyle(el);
+              if (style.display !== 'none' && 
+                  style.visibility !== 'hidden' && 
+                  (el.offsetWidth > 0 || el.offsetHeight > 0)) {
+                return true;
+              }
+            }
+          } catch (e) {}
+        }
+        return false;
+      }
+
+      // Ensure submit buttons are always accessible
+      function ensureSubmitButtonsAccessible() {
+        const buttons = document.querySelectorAll(
+          '.newsletter-submit, .newsletter-popup-submit, ' +
+          'button[type="submit"], input[type="submit"]'
+        );
+        
+        buttons.forEach(btn => {
+          btn.style.cssText += `
+            position: relative !important;
+            z-index: 10002 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+          `;
+        });
+      }
+
+      // Prevent double captcha triggers
+      function handleFormSubmission(form) {
+        if (!form) return;
+        
+        const formId = form.id || 'form-' + Math.random().toString(36).substr(2, 9);
+        
+        // Prevent multiple submissions
+        if (captchaState.activeForms.has(formId)) {
+          return false;
+        }
+        
+        captchaState.activeForms.add(formId);
+        
+        form.addEventListener('submit', function(e) {
+          // If captcha is verified, allow submission immediately
+          if (captchaState.isVerified && captchaState.verificationCount >= captchaState.maxVerifications) {
+            captchaState.activeForms.delete(formId);
+            return true; // Allow submission
+          }
+          
+          // If captcha is visible but not yet verified, wait for verification
+          if (captchaState.isVisible && !captchaState.isVerified) {
+            // Don't prevent - let Shopify handle it
+            return true;
+          }
+          
+          // No captcha, allow submission
+          captchaState.activeForms.delete(formId);
+          return true;
+        }, { once: true });
+      }
+
+      // Check if mobile device
+      function isMobile() {
+        return window.innerWidth <= 768;
+      }
+
+      // Hide/show footer on mobile based on captcha
+      function toggleFooterForCaptcha(captchaVisible) {
+        if (!isMobile()) return; // Only on mobile
+        
+        const footer = document.querySelector('footer, .site-footer');
+        if (!footer) return;
+        
+        if (captchaVisible) {
+          // Hide footer when captcha is visible
+          footer.style.display = 'none';
+        } else {
+          // Show footer when captcha is gone
+          footer.style.display = '';
+        }
+      }
+
+      // Monitor captcha state
+      function monitorCaptcha() {
+        const currentlyVisible = checkCaptchaVisible();
+        
+        if (currentlyVisible && !captchaState.isVisible) {
+          // Captcha just appeared
+          captchaState.isVisible = true;
+          captchaState.isVerified = false;
+          ensureSubmitButtonsAccessible();
+          toggleFooterForCaptcha(true); // Hide footer on mobile
+        } else if (!currentlyVisible && captchaState.isVisible) {
+          // Captcha disappeared - verification complete
+          captchaState.isVisible = false;
+          captchaState.isVerified = true;
+          captchaState.verificationCount++;
+          ensureSubmitButtonsAccessible();
+          toggleFooterForCaptcha(false); // Show footer again on mobile
+          
+          // Allow forms to submit now
+          captchaState.activeForms.clear();
+        } else if (currentlyVisible && captchaState.isVisible) {
+          // Captcha still visible, ensure footer is hidden
+          toggleFooterForCaptcha(true);
+        }
+      }
+
+      // Initialize on all forms
+      function initializeForms() {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+          // Skip challenge forms themselves
+          if (form.action && form.action.includes('challenge')) {
+            return;
+          }
+          
+          handleFormSubmission(form);
+        });
+        
+        ensureSubmitButtonsAccessible();
+      }
+
+      // Run monitoring
+      setInterval(monitorCaptcha, 200);
+      
+      // Initialize on load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeForms);
+      } else {
+        initializeForms();
+      }
+      
+      // Re-initialize on dynamic content
+      const observer = new MutationObserver(function() {
+        initializeForms();
+        ensureSubmitButtonsAccessible();
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    })();
+  </script>
+
 </body>
 </html>

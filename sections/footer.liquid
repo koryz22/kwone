@@ -64,8 +64,6 @@
                 </small>
               {%- endif -%}
             </div>
-            {%- comment -%} Container for Shopify spam protection captcha {%- endcomment -%}
-            <div class="newsletter-captcha-container" id="footer-captcha-container"></div>
             {%- if form.posted_successfully? -%}
               <h3
                 class="newsletter-form__message newsletter-form__message--success form__message"
@@ -289,35 +287,6 @@
     color: #f87171;
   }
 
-  .newsletter-captcha-container {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    position: relative;
-  }
-
-  /* Style for Shopify spam protection captcha */
-  .newsletter-captcha-container iframe,
-  .newsletter-captcha-container > div[id*="hcaptcha"],
-  .newsletter-captcha-container > div[class*="h-captcha"],
-  .newsletter-captcha-container .h-captcha {
-    display: block !important;
-    margin: 0 auto !important;
-    position: relative !important;
-  }
-
-  /* Hide captcha if it appears elsewhere on the page */
-  body > div[id*="hcaptcha"]:not(.newsletter-captcha-container > *),
-  body > div[class*="h-captcha"]:not(.newsletter-captcha-container > *),
-  body > iframe[src*="hcaptcha"]:not(.newsletter-captcha-container > *),
-  .newsletter-form ~ div[id*="challenge"]:not(.newsletter-captcha-container) {
-    position: absolute !important;
-    left: -9999px !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-
   .footer-copyright {
     font-size: 1rem;
     color: var(--color-text-muted);
@@ -389,78 +358,8 @@
     .footer-bottom {
       margin-top: 4.5rem;
     }
-
-    .newsletter-captcha-container {
-      margin-top: 1rem;
-    }
   }
 </style>
-
-<script>
-(function() {
-  'use strict';
-  
-  const captchaContainer = document.getElementById('footer-captcha-container');
-  if (!captchaContainer) return;
-  
-  // Function to move captcha into container
-  function moveCaptchaToFooter() {
-    // Common captcha selectors (Shopify uses hCaptcha)
-    const captchaSelectors = [
-      'div[id*="hcaptcha"]',
-      'div[class*="h-captcha"]',
-      'div[class*="hcaptcha"]',
-      'iframe[src*="hcaptcha"]',
-      'div[id*="challenge"]',
-      'div[class*="challenge"]'
-    ];
-    
-    captchaSelectors.forEach(selector => {
-      const captchaElements = document.querySelectorAll(selector);
-      captchaElements.forEach(el => {
-        // Skip if already in our container or if it's a child of a parent that's in our container
-        if (captchaContainer.contains(el) || captchaContainer.closest('footer')?.contains(el.parentElement)) {
-          return;
-        }
-        
-        // Check if element is actually visible (not hidden)
-        const style = window.getComputedStyle(el);
-        if (style.display !== 'none' && style.visibility !== 'hidden' && el.offsetWidth > 0) {
-          // Move to container
-          captchaContainer.innerHTML = '';
-          captchaContainer.appendChild(el);
-          el.style.position = 'relative';
-          el.style.margin = '0 auto';
-        }
-      });
-    });
-  }
-  
-  // Run immediately and also watch for dynamically added captchas
-  moveCaptchaToFooter();
-  
-  // Use MutationObserver to catch captchas that are added dynamically
-  const observer = new MutationObserver(function(mutations) {
-    moveCaptchaToFooter();
-  });
-  
-  // Observe the entire document body for changes
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
-  
-  // Also check after form interactions
-  const newsletterForm = document.getElementById('ContactFooter');
-  if (newsletterForm) {
-    newsletterForm.addEventListener('submit', function() {
-      setTimeout(moveCaptchaToFooter, 100);
-      setTimeout(moveCaptchaToFooter, 500);
-      setTimeout(moveCaptchaToFooter, 1000);
-    });
-  }
-})();
-</script>
 
 {% schema %}
 {
