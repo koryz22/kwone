@@ -848,9 +848,21 @@
         border: 1px solid rgba(0, 0, 0, 0.2) !important;
       }
 
+      /* Text elements in white container - black text for visibility */
       .shopify-email-marketing-confirmation__container p,
-      .shopify-email-marketing-confirmation__container label {
+      .shopify-email-marketing-confirmation__container label,
+      .shopify-email-marketing-confirmation__container h1,
+      .shopify-email-marketing-confirmation__container h2,
+      .shopify-email-marketing-confirmation__container h3,
+      .shopify-email-marketing-confirmation__container span,
+      .shopify-email-marketing-confirmation__container div:not(button):not(input) {
         color: rgba(0, 0, 0, 0.9) !important;
+      }
+      
+      /* Buttons keep their styling but text is readable */
+      .shopify-email-marketing-confirmation__container button[type="submit"],
+      .shopify-email-marketing-confirmation__container input[type="submit"] {
+        color: rgba(255, 255, 255, 1) !important; /* Button text stays white */
       }
 
       /* Ensure footer stays below captcha and confirmation */
@@ -1261,6 +1273,17 @@
         return false;
       }
 
+      // Function to check if email marketing confirmation container is visible
+      function checkConfirmationVisible() {
+        const confirmationContainer = document.querySelector('.shopify-email-marketing-confirmation__container');
+        if (!confirmationContainer) return false;
+        
+        const style = window.getComputedStyle(confirmationContainer);
+        return style.display !== 'none' && 
+               style.visibility !== 'hidden' && 
+               (confirmationContainer.offsetWidth > 0 || confirmationContainer.offsetHeight > 0);
+      }
+
       // Ensure submit buttons are always accessible
       function ensureSubmitButtonsAccessible() {
         const buttons = document.querySelectorAll(
@@ -1315,8 +1338,12 @@
         return window.innerWidth <= 768;
       }
 
-      // Hide/show footer on mobile ONLY based on captcha
+      // Hide/show footer on mobile ONLY based on captcha or confirmation
       function toggleFooterForCaptcha(captchaVisible) {
+        // Also check for confirmation container visibility
+        const confirmationVisible = checkConfirmationVisible();
+        const shouldHide = captchaVisible || confirmationVisible;
+        
         // Only hide footer on mobile screens (768px and below)
         // Desktop and larger/mid screens keep footer visible
         if (!isMobile()) {
@@ -1328,15 +1355,15 @@
           return;
         }
         
-        // Mobile only: hide/show footer based on captcha
+        // Mobile only: hide/show footer based on captcha or confirmation
         const footer = document.querySelector('footer, .site-footer');
         if (!footer) return;
         
-        if (captchaVisible) {
-          // Hide footer when captcha is visible (mobile only)
+        if (shouldHide) {
+          // Hide footer when captcha or confirmation is visible (mobile only)
           footer.style.display = 'none';
         } else {
-          // Show footer when captcha is gone (mobile only)
+          // Show footer when captcha/confirmation is gone (mobile only)
           footer.style.display = '';
         }
       }
@@ -1355,23 +1382,22 @@
         }
       };
 
-      // Monitor captcha state
+      // Monitor captcha state and confirmation container
       function monitorCaptcha() {
         const currentlyVisible = checkCaptchaVisible();
+        const confirmationVisible = checkConfirmationVisible();
         
         if (currentlyVisible && !captchaState.isVisible) {
           // Captcha just appeared
           captchaState.isVisible = true;
           captchaState.isVerified = false;
           ensureSubmitButtonsAccessible();
-          toggleFooterForCaptcha(true); // Hide footer on mobile
         } else if (!currentlyVisible && captchaState.isVisible) {
           // Captcha disappeared - verification complete
           captchaState.isVisible = false;
           captchaState.isVerified = true;
           captchaState.verificationCount++;
           ensureSubmitButtonsAccessible();
-          toggleFooterForCaptcha(false); // Show footer again on mobile
           
           // Allow forms to submit now
           captchaState.activeForms.clear();
@@ -1382,10 +1408,10 @@
               window.handleSuccessfulSubscription();
             }
           }, 1000);
-        } else if (currentlyVisible && captchaState.isVisible) {
-          // Captcha still visible, ensure footer is hidden
-          toggleFooterForCaptcha(true);
         }
+        
+        // Always check both captcha and confirmation for footer toggle
+        toggleFooterForCaptcha(currentlyVisible || confirmationVisible);
       }
 
       // Initialize on all forms
