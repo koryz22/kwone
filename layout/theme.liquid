@@ -1095,23 +1095,33 @@
         }, { once: true });
       }
 
-      // Check if mobile device
+      // Check if mobile device (small screens only)
       function isMobile() {
         return window.innerWidth <= 768;
       }
 
-      // Hide/show footer on mobile based on captcha
+      // Hide/show footer on mobile ONLY based on captcha
       function toggleFooterForCaptcha(captchaVisible) {
-        if (!isMobile()) return; // Only on mobile
+        // Only hide footer on mobile screens (768px and below)
+        // Desktop and larger/mid screens keep footer visible
+        if (!isMobile()) {
+          // Desktop/mid screens: ensure footer is always visible
+          const footer = document.querySelector('footer, .site-footer');
+          if (footer) {
+            footer.style.display = '';
+          }
+          return;
+        }
         
+        // Mobile only: hide/show footer based on captcha
         const footer = document.querySelector('footer, .site-footer');
         if (!footer) return;
         
         if (captchaVisible) {
-          // Hide footer when captcha is visible
+          // Hide footer when captcha is visible (mobile only)
           footer.style.display = 'none';
         } else {
-          // Show footer when captcha is gone
+          // Show footer when captcha is gone (mobile only)
           footer.style.display = '';
         }
       }
