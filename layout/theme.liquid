@@ -157,17 +157,17 @@
       </button>
       <h2 class="newsletter-popup-title">Subscribe to our email</h2>
       <p class="newsletter-popup-message">Get a 10% off code when you subscribe!</p>
-      <form class="newsletter-popup-form" id="popup-newsletter-form" action="/account" method="post" accept-charset="UTF-8" target="popup-newsletter-iframe" style="display: none;">
-        <input type="hidden" name="form_type" value="customer">
-        <input type="hidden" name="utf8" value="✓">
+
+      {% comment %} Hidden form with Shopify's CSRF token - uses Liquid form tag {% endcomment %}
+      {% form 'create_customer', id: 'popup-newsletter-form', class: 'popup-newsletter-form-hidden' %}
         <input type="hidden" name="customer[email]" id="popup-newsletter-email-hidden">
+        <input type="hidden" name="customer[first_name]" id="popup-newsletter-firstname-hidden">
         <input type="hidden" name="customer[password]" id="popup-newsletter-password-hidden">
         <input type="hidden" name="customer[password_confirmation]" id="popup-newsletter-password-confirm-hidden">
         <input type="hidden" name="customer[accepts_marketing]" value="true">
         <input type="hidden" name="customer[tags]" value="newsletter,interested">
-      </form>
-      <iframe name="popup-newsletter-iframe" id="popup-newsletter-iframe" style="display: none;"></iframe>
-      
+      {% endform %}
+
       <div class="newsletter-popup-input-wrapper">
         <input
           type="email"
@@ -402,6 +402,10 @@
       width: 100%;
     }
 
+    .popup-newsletter-form-hidden {
+      display: none !important;
+    }
+
     .newsletter-popup-input-wrapper {
       display: flex;
       gap: 1rem;
@@ -627,11 +631,11 @@
         });
       }
 
-      // Handle form submission to trigger marketing automation workflow
-      if (submitBtn) {
+      // Handle form submission using Shopify's form with CSRF token
+      if (submitBtn && form) {
         submitBtn.addEventListener('click', async function(e) {
           e.preventDefault();
-          
+
           const email = emailInput.value.trim();
           if (!email) return;
 
@@ -646,36 +650,45 @@
             const emailName = email.split('@')[0];
             const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
 
-            // Create customer account with marketing consent - this triggers the workflow
-            const customerData = new FormData();
-            customerData.append('form_type', 'customer');
-            customerData.append('utf8', '✓');
-            customerData.append('customer[email]', email);
-            customerData.append('customer[first_name]', firstName);
-            customerData.append('customer[password]', randomPassword);
-            customerData.append('customer[password_confirmation]', randomPassword);
-            customerData.append('customer[accepts_marketing]', 'true');
-            customerData.append('customer[tags]', 'newsletter,interested');
+            // Set values in the hidden form fields
+            document.getElementById('popup-newsletter-email-hidden').value = email;
+            document.getElementById('popup-newsletter-firstname-hidden').value = firstName;
+            document.getElementById('popup-newsletter-password-hidden').value = randomPassword;
+            document.getElementById('popup-newsletter-password-confirm-hidden').value = randomPassword;
 
-            // Submit to /account endpoint to create customer and trigger workflow
-            // 422 status means customer already exists, which is OK - they're already subscribed
-            const response = await fetch('/account', {
+            // Submit the form via fetch using FormData (includes Shopify's CSRF token)
+            const formData = new FormData(form);
+
+            const response = await fetch(form.action, {
               method: 'POST',
-              body: customerData,
-              redirect: 'manual',
+              body: formData,
               credentials: 'same-origin'
             });
-            
-            // 200, 302, 0 = success (new customer created)
-            // 422 = customer already exists (also OK - they may already be subscribed)
-            // Any other status, we'll still show success to prevent email harvesting
 
-            // Show success message - workflow will trigger automatically
-            messageEl.textContent = 'Success! Check your email for your 10% off code.';
-            messageEl.className = 'newsletter-popup-message-text success';
-            messageEl.style.display = 'block';
-            emailInput.value = '';
-            
+            // Check response for success
+            // 200/302 = success, 422 = customer already exists (also OK)
+            const isSuccess = response.ok || response.status === 422 || response.redirected;
+
+            if (isSuccess || response.status === 0) {
+              // Show success message
+              messageEl.textContent = 'Success! Check your email for your 10% off code.';
+              messageEl.className = 'newsletter-popup-message-text success';
+              messageEl.style.display = 'block';
+              emailInput.value = '';
+            } else {
+              // Try to get error message from response
+              const text = await response.text();
+              if (text.includes('email has already been taken') || text.includes('already exists')) {
+                messageEl.textContent = 'You\'re already subscribed! Check your email for updates.';
+                messageEl.className = 'newsletter-popup-message-text success';
+              } else {
+                messageEl.textContent = 'Success! Check your email for your 10% off code.';
+                messageEl.className = 'newsletter-popup-message-text success';
+              }
+              messageEl.style.display = 'block';
+              emailInput.value = '';
+            }
+
             // Close popup after 3 seconds
             setTimeout(() => {
               popup.style.display = 'none';
@@ -689,7 +702,7 @@
             messageEl.className = 'newsletter-popup-message-text success';
             messageEl.style.display = 'block';
             emailInput.value = '';
-            
+
             setTimeout(() => {
               popup.style.display = 'none';
               document.body.style.overflow = '';

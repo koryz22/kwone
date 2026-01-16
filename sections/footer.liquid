@@ -18,17 +18,17 @@
       {% if section.settings.show_newsletter %}
         <div class="footer-newsletter">
           <h2 class="newsletter-heading">{{ section.settings.newsletter_title | default: 'Get exclusive sales, release dates, and more.' }}</h2>
-          <form class="newsletter-form" id="newsletter-form" action="/account" method="post" accept-charset="UTF-8" target="newsletter-iframe" style="display: none;">
-            <input type="hidden" name="form_type" value="customer">
-            <input type="hidden" name="utf8" value="✓">
+
+          {% comment %} Hidden form with Shopify's CSRF token - uses Liquid form tag {% endcomment %}
+          {% form 'create_customer', id: 'newsletter-form', class: 'newsletter-form-hidden' %}
             <input type="hidden" name="customer[email]" id="newsletter-email-hidden">
+            <input type="hidden" name="customer[first_name]" id="newsletter-firstname-hidden">
             <input type="hidden" name="customer[password]" id="newsletter-password-hidden">
             <input type="hidden" name="customer[password_confirmation]" id="newsletter-password-confirm-hidden">
             <input type="hidden" name="customer[accepts_marketing]" value="true">
             <input type="hidden" name="customer[tags]" value="newsletter,interested">
-          </form>
-          <iframe name="newsletter-iframe" id="newsletter-iframe" style="display: none;"></iframe>
-          
+          {% endform %}
+
           <div class="newsletter-input-wrapper">
             <input
               type="email"
@@ -161,6 +161,10 @@
   .newsletter-form {
     width: 100%;
     max-width: 800px;
+  }
+
+  .newsletter-form-hidden {
+    display: none !important;
   }
 
   .newsletter-input-wrapper {
@@ -320,10 +324,10 @@
 
   if (!form) return;
 
-  // Handle form submission to trigger marketing automation workflow
+  // Handle form submission using Shopify's form with CSRF token
   submitBtn.addEventListener('click', async function(e) {
     e.preventDefault();
-    
+
     const email = emailInput.value.trim();
     if (!email) return;
 
@@ -338,37 +342,44 @@
       const emailName = email.split('@')[0];
       const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
 
-      // Create customer account with marketing consent - this triggers the workflow
-      const customerData = new FormData();
-      customerData.append('form_type', 'customer');
-      customerData.append('utf8', '✓');
-      customerData.append('customer[email]', email);
-      customerData.append('customer[first_name]', firstName);
-      customerData.append('customer[password]', randomPassword);
-      customerData.append('customer[password_confirmation]', randomPassword);
-      customerData.append('customer[accepts_marketing]', 'true');
-      customerData.append('customer[tags]', 'newsletter,interested');
+      // Set values in the hidden form fields
+      document.getElementById('newsletter-email-hidden').value = email;
+      document.getElementById('newsletter-firstname-hidden').value = firstName;
+      document.getElementById('newsletter-password-hidden').value = randomPassword;
+      document.getElementById('newsletter-password-confirm-hidden').value = randomPassword;
 
-      // Submit to /account endpoint to create customer and trigger workflow
-      // 422 status means customer already exists, which is OK - they're already subscribed
-      const response = await fetch('/account', {
+      // Submit the form via fetch using FormData (includes Shopify's CSRF token)
+      const formData = new FormData(form);
+
+      const response = await fetch(form.action, {
         method: 'POST',
-        body: customerData,
-        redirect: 'manual',
+        body: formData,
         credentials: 'same-origin'
       });
-      
-      // 200, 302, 0 = success (new customer created)
-      // 422 = customer already exists (also OK - they may already be subscribed)
-      // Any other status, we'll still show success to prevent email harvesting
 
-      // Show success message - workflow will trigger automatically
-      messageEl.textContent = 'Welcome to the journey. Check your email for your 10% off code!';
-      messageEl.className = 'newsletter-message success';
-      messageEl.style.display = 'block';
-      emailInput.value = '';
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
+      // Check response for success
+      // 200/302 = success, 422 = customer already exists (also OK)
+      const isSuccess = response.ok || response.status === 422 || response.redirected;
+
+      if (isSuccess || response.status === 0) {
+        // Show success message
+        messageEl.textContent = 'Welcome to the journey. Check your email for your 10% off code!';
+        messageEl.className = 'newsletter-message success';
+        messageEl.style.display = 'block';
+        emailInput.value = '';
+      } else {
+        // Try to get error message from response
+        const text = await response.text();
+        if (text.includes('email has already been taken') || text.includes('already exists')) {
+          messageEl.textContent = 'You\'re already subscribed! Check your email for updates.';
+          messageEl.className = 'newsletter-message success';
+        } else {
+          messageEl.textContent = 'Welcome to the journey. Check your email for your 10% off code!';
+          messageEl.className = 'newsletter-message success';
+        }
+        messageEl.style.display = 'block';
+        emailInput.value = '';
+      }
 
       setTimeout(() => {
         messageEl.style.display = 'none';
@@ -380,6 +391,7 @@
       messageEl.className = 'newsletter-message success';
       messageEl.style.display = 'block';
       emailInput.value = '';
+    } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = originalText;
     }
