@@ -17,35 +17,64 @@
       <!-- Newsletter -->
       {% if section.settings.show_newsletter %}
         <div class="footer-newsletter">
-          <h2 class="newsletter-heading">{{ section.settings.newsletter_title | default: 'Get exclusive sales, release dates, and more.' }}</h2>
-
-          {% comment %} Hidden form that submits to iframe - avoids page redirect {% endcomment %}
-          {% form 'create_customer', id: 'newsletter-form', class: 'newsletter-form-hidden' %}
-            <input type="hidden" name="customer[email]" id="newsletter-email-hidden">
-            <input type="hidden" name="customer[first_name]" id="newsletter-firstname-hidden">
-            <input type="hidden" name="customer[password]" id="newsletter-password-hidden">
-            <input type="hidden" name="customer[password_confirmation]" id="newsletter-password-confirm-hidden">
-            <input type="hidden" name="customer[accepts_marketing]" value="true">
-            <input type="hidden" name="customer[tags]" value="newsletter,interested">
-            <input type="hidden" name="return_to" value="{{ request.path }}">
-          {% endform %}
-          <iframe name="newsletter-iframe" id="newsletter-iframe" style="display: none;"></iframe>
-
-          <div class="newsletter-input-wrapper">
-            <input
-              type="email"
-              id="newsletter-email"
-              class="newsletter-input"
-              placeholder="{{ section.settings.email_placeholder | default: 'EMAIL ADDRESS' }}"
-              required
-              aria-label="Email address"
-            >
-            <button type="button" class="newsletter-submit" id="newsletter-submit">
-              {{ section.settings.subscribe_button | default: 'SUBSCRIBE' }}
-            </button>
-          </div>
-
-          <div class="newsletter-message" id="newsletter-message" style="display: none;"></div>
+          {%- if section.settings.newsletter_title != blank -%}
+            <h2 class="newsletter-heading">{{ section.settings.newsletter_title }}</h2>
+          {%- endif -%}
+          {%- form 'customer', id: 'ContactFooter', class: 'newsletter-form' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <div class="newsletter-form__field-wrapper">
+              <div class="field newsletter-field">
+                <input
+                  id="NewsletterForm--{{ section.id }}"
+                  type="email"
+                  name="contact[email]"
+                  class="newsletter-input field__input"
+                  value="{{ form.email }}"
+                  aria-required="true"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  autocomplete="email"
+                  {% if form.errors %}
+                    autofocus
+                    aria-invalid="true"
+                    aria-describedby="ContactFooter-error"
+                  {% elsif form.posted_successfully? %}
+                    aria-describedby="ContactFooter-success"
+                  {% endif %}
+                  placeholder="{{ section.settings.email_placeholder | default: 'newsletter.label' | t }}"
+                  required
+                >
+                <label class="field__label" for="NewsletterForm--{{ section.id }}">
+                  {{ section.settings.email_placeholder | default: 'newsletter.label' | t }}
+                </label>
+                <button
+                  type="submit"
+                  class="newsletter-submit field__button"
+                  name="commit"
+                  id="Subscribe"
+                  aria-label="{{ section.settings.subscribe_button | default: 'newsletter.button_label' | t }}"
+                >
+                  {{ section.settings.subscribe_button | default: 'SUBSCRIBE' }}
+                </button>
+              </div>
+              {%- if form.errors -%}
+                <small class="newsletter-form__message newsletter-form__message--error form__message" id="ContactFooter-error">
+                  {{- form.errors.translated_fields.email | capitalize }}
+                  {{ form.errors.messages.email -}}
+                </small>
+              {%- endif -%}
+            </div>
+            {%- if form.posted_successfully? -%}
+              <h3
+                class="newsletter-form__message newsletter-form__message--success form__message"
+                id="ContactFooter-success"
+                tabindex="-1"
+                autofocus
+              >
+                {{- 'newsletter.success' | t -}}
+              </h3>
+            {%- endif -%}
+          {%- endform -%}
         </div>
       {% endif %}
     </div>
@@ -165,14 +194,23 @@
     max-width: 800px;
   }
 
-  .newsletter-form-hidden {
-    display: none !important;
+  .newsletter-form__field-wrapper {
+    width: 100%;
   }
 
-  .newsletter-input-wrapper {
+  .newsletter-field {
     display: flex;
     gap: 1rem;
     width: 100%;
+    position: relative;
+  }
+
+  .newsletter-field .field__label {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
 
   .newsletter-input {
@@ -187,6 +225,7 @@
     letter-spacing: 0.02em;
     transition: all 0.3s ease;
     min-height: 50px;
+    width: 100%;
   }
 
   .newsletter-input::placeholder {
@@ -200,6 +239,10 @@
     outline: none;
     border-color: rgba(255, 255, 255, 0.3);
     background: rgba(50, 50, 50, 0.9);
+  }
+
+  .newsletter-input[aria-invalid="true"] {
+    border-color: #f87171;
   }
 
   .newsletter-submit {
@@ -229,17 +272,18 @@
     transform: scale(0.98);
   }
 
-  .newsletter-message {
+  .newsletter-form__message {
     margin-top: 1rem;
     font-size: 0.85rem;
     font-family: var(--font-sans);
+    display: block;
   }
 
-  .newsletter-message.success {
+  .newsletter-form__message--success {
     color: #4ade80;
   }
 
-  .newsletter-message.error {
+  .newsletter-form__message--error {
     color: #f87171;
   }
 
@@ -298,7 +342,7 @@
       text-align: center;
     }
 
-    .newsletter-input-wrapper {
+    .newsletter-field {
       flex-direction: column;
       gap: 1rem;
     }
@@ -317,87 +361,6 @@
   }
 </style>
 
-<script>
-(function() {
-  const form = document.getElementById('newsletter-form');
-  const messageEl = document.getElementById('newsletter-message');
-  const submitBtn = document.getElementById('newsletter-submit');
-  const emailInput = document.getElementById('newsletter-email');
-  const iframe = document.getElementById('newsletter-iframe');
-
-  if (!form || !iframe) return;
-
-  // Set form to submit to iframe (prevents page redirect)
-  form.setAttribute('target', 'newsletter-iframe');
-
-  // Handle form submission
-  submitBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-
-    const email = emailInput.value.trim();
-    if (!email) return;
-
-    // Basic email validation
-    if (!email.includes('@') || !email.includes('.')) {
-      messageEl.textContent = 'Please enter a valid email address.';
-      messageEl.className = 'newsletter-message error';
-      messageEl.style.display = 'block';
-      return;
-    }
-
-    // Show loading state
-    const originalText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'JOINING...';
-
-    // Generate a strong password (meets Shopify requirements: min 5 chars)
-    const randomPassword = 'Kw0ne!' + Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
-    const emailName = email.split('@')[0].replace(/[^a-zA-Z]/g, '') || 'Subscriber';
-    const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
-
-    // Set values in the hidden form fields
-    document.getElementById('newsletter-email-hidden').value = email;
-    document.getElementById('newsletter-firstname-hidden').value = firstName;
-    document.getElementById('newsletter-password-hidden').value = randomPassword;
-    document.getElementById('newsletter-password-confirm-hidden').value = randomPassword;
-
-    // Submit the form (goes to iframe)
-    form.submit();
-
-    // Show success message after a short delay (form submits to iframe)
-    setTimeout(function() {
-      messageEl.textContent = 'Welcome to the journey. Check your email for your 10% off code!';
-      messageEl.className = 'newsletter-message success';
-      messageEl.style.display = 'block';
-      emailInput.value = '';
-      submitBtn.disabled = false;
-      submitBtn.textContent = originalText;
-
-      setTimeout(function() {
-        messageEl.style.display = 'none';
-      }, 5000);
-    }, 1500);
-  });
-
-  // Listen for iframe load to detect errors
-  iframe.addEventListener('load', function() {
-    try {
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-      const iframeContent = iframeDoc.body ? iframeDoc.body.innerHTML : '';
-
-      // Check for common error messages
-      if (iframeContent.includes('already been taken') || iframeContent.includes('already exists')) {
-        messageEl.textContent = 'You\'re already subscribed! Check your email for updates.';
-        messageEl.className = 'newsletter-message success';
-        messageEl.style.display = 'block';
-      }
-    } catch (e) {
-      // Cross-origin error - this is expected after successful submission
-      // The redirect to /account means success
-    }
-  });
-})();
-</script>
 
 {% schema %}
 {
